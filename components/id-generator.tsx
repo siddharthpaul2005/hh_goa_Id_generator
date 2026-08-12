@@ -352,8 +352,7 @@ export default function IdGenerator() {
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/png,image/jpeg,image/webp,image/heic,image/heif"
-        capture="user"
+        accept="image/*,.heic,.heif"
         multiple={mode === "squad"}
         onChange={handleFileChange}
         className="hidden"
