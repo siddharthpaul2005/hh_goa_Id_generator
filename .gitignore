@@ -1,0 +1,36 @@
+# dependencies
+/node_modules
+/.pnpm-store
+
+# next.js build output
+/.next/
+/out/
+
+# production
+/build
+
+# debug / temp scripts
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+/scraped.html
+/hhgoa_page.html
+/fetch_hhgoa.py
+/parse_html.js
+/parse_html.py
+/find_fonts.js
+/download_assets.js
+/setup_public_brand.js
+/downloaded_brand/
+svg_*.svg
+
+# env files
+.env*.local
+.env
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
