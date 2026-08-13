@@ -29,14 +29,19 @@ import {
 import { generateBuilderTitle } from "@/lib/builder-titles";
 import { convertHeicToJpeg } from "@/lib/heic-converter";
 
-export default function IdGenerator() {
+interface IdGeneratorProps {
+  globalTheme: "dark" | "light";
+  onToggleGlobalTheme: () => void;
+}
+
+export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGeneratorProps) {
   // State
   const [mode, setMode] = useState<"single" | "squad">("single");
   const [cardTheme, setCardTheme] = useState<"light" | "dark">("dark");
   const [name, setName] = useState("");
   const [teamName, setTeamName] = useState("");
   const [stack, setStack] = useState("");
-  const [builderTitle, setBuilderTitle] = useState("WEB3 ARCHITECT");
+  const [builderTitle, setBuilderTitle] = useState("PROTOCOL VANGUARD");
   const [titleOverridden, setTitleOverridden] = useState(false);
   const [photos, setPhotos] = useState<PhotoCropState[]>([
     { image: null, cropX: 0, cropY: 0, scale: 1, name: "BUILDER 1" }
@@ -48,6 +53,11 @@ export default function IdGenerator() {
   const [isUploading, setIsUploading] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Sync card theme with global theme by default
+  useEffect(() => {
+    setCardTheme(globalTheme);
+  }, [globalTheme]);
 
   // Canvas & Container Refs
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -326,11 +336,13 @@ export default function IdGenerator() {
     }
   };
 
+  const isDarkSite = globalTheme === "dark";
+
   return (
     <div className="w-full max-w-5xl mx-auto flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 p-3 md:p-6 font-mono stagger-2">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-6 right-6 z-50 bg-[#FEE101] border-2 border-[#000000] text-[#072E1B] text-xs px-4 py-3 rounded shadow-[4px_4px_0px_#000000] flex items-center gap-2.5 animate-bounce font-mono font-bold">
+        <div className={`fixed top-6 right-6 z-50 ${isDarkSite ? "bg-[#0A3D24] border-2 border-[#00FF88] text-[#00FF88]" : "bg-[#FFFBE8] border-2 border-[#0B6839] text-[#0B6839]"} text-xs px-4 py-3 rounded shadow-[4px_4px_0px_#000000] flex items-center gap-2.5 animate-bounce font-mono font-bold`}>
           <Zap className="w-4 h-4 text-[#FF3B77]" />
           <span>[ {toastMessage} ]</span>
         </div>
@@ -359,13 +371,13 @@ export default function IdGenerator() {
         {/* Toggles Bar: Mode Selector & Card Theme Switcher */}
         <div className="w-full max-w-md flex flex-col sm:flex-row gap-2">
           {/* Mode Switcher Tabs */}
-          <div className="flex-1 grid grid-cols-2 p-1 rounded bg-[#062B19] border-2 border-[#FEE101]">
+          <div className={`flex-1 grid grid-cols-2 p-1 rounded border-2 ${isDarkSite ? "bg-[#062B19] border-[#00FF88]" : "bg-[#F4EFE2] border-[#0B6839]"}`}>
             <button
               onClick={() => handleModeChange("single")}
               className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 ${
                 mode === "single"
-                  ? "tab-emerald-active"
-                  : "tab-emerald hover:bg-[#073820]"
+                  ? "tab-hh-active"
+                  : "tab-hh-inactive hover:bg-white/10"
               }`}
             >
               <User className="w-3.5 h-3.5" />
@@ -375,8 +387,8 @@ export default function IdGenerator() {
               onClick={() => handleModeChange("squad")}
               className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 ${
                 mode === "squad"
-                  ? "tab-emerald-active"
-                  : "tab-emerald hover:bg-[#073820]"
+                  ? "tab-hh-active"
+                  : "tab-hh-inactive hover:bg-white/10"
               }`}
             >
               <Users className="w-3.5 h-3.5" />
@@ -384,14 +396,14 @@ export default function IdGenerator() {
             </button>
           </div>
 
-          {/* Card Theme Toggle Switch (DARK / LIGHT CARD) */}
-          <div className="grid grid-cols-2 p-1 rounded bg-[#062B19] border-2 border-[#FEE101]">
+          {/* Card Theme Switcher (DARK CARD vs LIGHT CARD) */}
+          <div className={`grid grid-cols-2 p-1 rounded border-2 ${isDarkSite ? "bg-[#062B19] border-[#00FF88]" : "bg-[#F4EFE2] border-[#0B6839]"}`}>
             <button
               onClick={() => setCardTheme("dark")}
               className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1 ${
                 cardTheme === "dark"
-                  ? "bg-[#FEE101] text-[#072E1B] shadow-[2px_2px_0px_#000000]"
-                  : "text-[#FEE101] hover:bg-[#073820]"
+                  ? "bg-[#051F14] text-[#00FF88] border border-[#00FF88] shadow-[2px_2px_0px_#000000]"
+                  : "text-current hover:bg-white/10"
               }`}
             >
               <Moon className="w-3 h-3 text-[#FF3B77]" />
@@ -401,34 +413,34 @@ export default function IdGenerator() {
               onClick={() => setCardTheme("light")}
               className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1 ${
                 cardTheme === "light"
-                  ? "bg-[#FEE101] text-[#072E1B] shadow-[2px_2px_0px_#000000]"
-                  : "text-[#FEE101] hover:bg-[#073820]"
+                  ? "bg-[#FFFBE8] text-[#0B6839] border border-[#0B6839] shadow-[2px_2px_0px_#000000]"
+                  : "text-current hover:bg-white/10"
               }`}
             >
-              <Sun className="w-3 h-3 text-[#072E1B]" />
+              <Sun className="w-3 h-3 text-[#FEE101]" />
               <span>LIGHT</span>
             </button>
           </div>
         </div>
 
         {/* OUTSIDE DRAG REPOSITION HINT BAR */}
-        <div className="w-full max-w-md bg-[#0A3D24] border-2 border-[#FEE101] px-3.5 py-2 rounded flex items-center justify-between text-[11px] font-bold text-[#FEE101] shadow-[3px_3px_0px_rgba(0,0,0,0.5)]">
+        <div className={`w-full max-w-md border-2 px-3 py-2 rounded flex items-center justify-between text-[11px] font-bold shadow-[3px_3px_0px_#000000] ${isDarkSite ? "bg-[#0A3D24] border-[#00FF88] text-[#00FF88]" : "bg-[#FFFBE8] border-[#0B6839] text-[#0B6839]"}`}>
           <div className="flex items-center gap-1.5">
             <Move className="w-3.5 h-3.5 text-[#FF3B77]" />
             <span>DRAG CANVAS TO REPOSITION CROP</span>
           </div>
-          <span className="text-[10px] bg-[#FF3B77] text-white px-2 py-0.5 rounded">REALTIME</span>
+          <span className="text-[10px] bg-[#FF3B77] text-white px-2 py-0.5 rounded font-mono">REALTIME</span>
         </div>
 
         {/* Live Canvas Interactive Box */}
-        <div className="relative w-full max-w-md aspect-[1080/1350] bg-[#073520] rounded-xl border-4 border-[#FEE101] overflow-hidden shadow-[10px_10px_0px_rgba(0,0,0,0.7)] group touch-none select-none">
+        <div className={`relative w-full max-w-md aspect-[1080/1350] rounded-xl overflow-hidden shadow-[8px_8px_0px_rgba(0,0,0,0.7)] group touch-none select-none ${cardTheme === "dark" ? "hh-card-dark" : "hh-card-light"}`}>
           {/* Loader overlay */}
           {isAssetsLoading && (
-            <div className="absolute inset-0 z-20 bg-[#073520] flex flex-col items-center justify-center gap-3 text-[#FEE101] font-mono p-6">
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 font-mono p-6 bg-[#051F14] text-[#00FF88]">
               <Stamp className="w-8 h-8 text-[#FF3B77] animate-bounce" />
               <div className="text-xs tracking-wider flex items-center gap-1">
-                <span className="text-[#FF3B77]">INITIALIZING POSTER ENGINE...</span>
-                <span className="animate-cursor-blink text-[#FEE101]">_</span>
+                <span className="text-[#FF3B77]">INITIALIZING CARD ENGINE...</span>
+                <span className="animate-cursor-blink text-[#00FF88]">_</span>
               </div>
             </div>
           )}
@@ -452,17 +464,17 @@ export default function IdGenerator() {
         {/* Upload Dropzone */}
         <div 
           onClick={() => fileInputRef.current?.click()}
-          className="w-full p-4 rounded-lg border-3 border-dashed border-[#FEE101] hover:border-[#FF3B77] bg-[#0A3D24] hover:bg-[#062B19] transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group shadow-[4px_4px_0px_rgba(0,0,0,0.6)]"
+          className={`w-full p-4 rounded-lg border-3 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group shadow-[4px_4px_0px_#000000] ${isDarkSite ? "bg-[#0A3D24] border-[#00FF88] hover:bg-[#062B19]" : "bg-[#FFFBE8] border-[#0B6839] hover:bg-[#F7F1E1]"}`}
         >
-          <div className="w-10 h-10 rounded-md bg-[#FF3B77]/20 border-2 border-[#FEE101] flex items-center justify-center text-[#FF3B77] group-hover:scale-110 transition-transform">
-            <Camera className="w-5 h-5 text-[#FEE101]" />
+          <div className="w-10 h-10 rounded-md bg-[#FF3B77]/20 border-2 border-current flex items-center justify-center group-hover:scale-110 transition-transform">
+            <Camera className="w-5 h-5 text-[#FF3B77]" />
           </div>
           <div className="text-center">
-            <p className="text-xs font-bold text-[#FEE101] flex items-center gap-1.5 justify-center tracking-wider">
+            <p className="text-xs font-bold flex items-center gap-1.5 justify-center tracking-wider">
               <Upload className="w-3.5 h-3.5 text-[#FF3B77]" />
               <span>{photos[0]?.image ? "[ CHANGE BUILDER PHOTO ]" : "[ UPLOAD BUILDER PHOTO ]"}</span>
             </p>
-            <p className="text-[10px] text-[#FFFBE8]/70 mt-1 font-mono">
+            <p className="text-[10px] opacity-75 mt-1 font-mono">
               Supports JPG, PNG, WEBP, HEIC (iPhone gallery / camera)
             </p>
           </div>
@@ -470,13 +482,13 @@ export default function IdGenerator() {
 
         {/* Squad Member Selector */}
         {mode === "squad" && (
-          <div className="flex flex-col gap-2 p-3.5 rounded-lg bg-[#0A3D24] border-2 border-[#FEE101] shadow-[4px_4px_0px_rgba(0,0,0,0.6)]">
+          <div className={`flex flex-col gap-2 p-3.5 rounded-lg border-2 shadow-[4px_4px_0px_#000000] ${isDarkSite ? "bg-[#0A3D24] border-[#00FF88]" : "bg-[#FFFBE8] border-[#0B6839]"}`}>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-[#FEE101]">TEAMMATES ({photos.length}/4)</span>
+              <span className="text-xs font-bold">TEAMMATES ({photos.length}/4)</span>
               {photos.length < 4 && (
                 <button
                   onClick={addSquadMember}
-                  className="text-[10px] bg-[#FF3B77] text-white px-2 py-1 rounded font-bold font-mono border border-[#FEE101]"
+                  className="text-[10px] bg-[#FF3B77] text-white px-2 py-1 rounded font-bold font-mono border border-black"
                 >
                   + ADD TEAMMATE
                 </button>
@@ -489,8 +501,8 @@ export default function IdGenerator() {
                   onClick={() => setActivePhotoIdx(idx)}
                   className={`p-2 rounded border-2 text-xs flex flex-col gap-1 cursor-pointer transition-all ${
                     activePhotoIdx === idx 
-                      ? "border-[#FF3B77] bg-[#FF3B77]/20 text-[#FEE101]" 
-                      : "border-[#FEE101] bg-[#062B19] text-[#FFFBE8]"
+                      ? "border-[#FF3B77] bg-[#FF3B77]/20" 
+                      : "border-current bg-black/20"
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -502,7 +514,7 @@ export default function IdGenerator() {
                     value={p.name || ""}
                     onChange={(e) => updateSquadMemberName(idx, e.target.value)}
                     placeholder={`Teammate ${idx + 1}`}
-                    className="w-full bg-[#052414] border border-[#FEE101] px-2 py-1 rounded text-[11px] text-[#FFFBE8] focus:outline-none focus:border-[#FF3B77] font-mono"
+                    className="w-full bg-black/40 border border-current px-2 py-1 rounded text-[11px] focus:outline-none focus:border-[#FF3B77] font-mono"
                   />
                 </div>
               ))}
@@ -511,10 +523,10 @@ export default function IdGenerator() {
         )}
 
         {/* Form Inputs: Name, Team Name, Stack */}
-        <div className="flex flex-col gap-3.5 p-4 rounded-lg bg-[#0A3D24] border-2 border-[#FEE101] shadow-[4px_4px_0px_rgba(0,0,0,0.6)]">
+        <div className={`flex flex-col gap-3.5 p-4 rounded-lg border-2 shadow-[4px_4px_0px_#000000] ${isDarkSite ? "bg-[#0A3D24] border-[#00FF88]" : "bg-[#FFFBE8] border-[#0B6839]"}`}>
           {/* Name Field */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-bold text-[#FEE101] flex items-center justify-between">
+            <label className="text-[11px] font-bold flex items-center justify-between">
               <span>BUILDER NAME</span>
               <span className="text-[10px] text-[#FF3B77]">[ REQUIRED ]</span>
             </label>
@@ -522,61 +534,61 @@ export default function IdGenerator() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Faizan Ali / Alex"
+              placeholder="e.g. Siddharth / Alex"
               maxLength={28}
-              className="w-full bg-[#052414] border-2 border-[#FEE101] rounded px-3 py-2 text-xs text-[#FFFBE8] placeholder-[#FFFBE8]/40 focus:outline-none focus:border-[#FF3B77] font-bold uppercase transition-colors font-mono"
+              className={`w-full border-2 rounded px-3 py-2 text-xs focus:outline-none focus:border-[#FF3B77] font-bold uppercase transition-colors font-mono ${isDarkSite ? "bg-[#051F14] border-[#00FF88] text-white" : "bg-[#F7F1E1] border-[#0B6839] text-[#0A291A]"}`}
             />
           </div>
 
           {/* Team Name Field */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-bold text-[#FEE101]">
+            <label className="text-[11px] font-bold">
               TEAM NAME (OPTIONAL)
             </label>
             <input
               type="text"
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
-              placeholder="e.g. Solana Surfers / Neural Alchemists"
+              placeholder="e.g. Solana Surfers / Protocol Vanguard"
               maxLength={32}
-              className="w-full bg-[#052414] border-2 border-[#FEE101] rounded px-3 py-2 text-xs text-[#FFFBE8] placeholder-[#FFFBE8]/40 focus:outline-none focus:border-[#FF3B77] font-bold uppercase transition-colors font-mono"
+              className={`w-full border-2 rounded px-3 py-2 text-xs focus:outline-none focus:border-[#FF3B77] font-bold uppercase transition-colors font-mono ${isDarkSite ? "bg-[#051F14] border-[#00FF88] text-white" : "bg-[#F7F1E1] border-[#0B6839] text-[#0A291A]"}`}
             />
           </div>
 
           {/* Stack / Role Field */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-bold text-[#FEE101]">
+            <label className="text-[11px] font-bold">
               STACK / SKILLS (COMMA SEPARATED)
             </label>
             <input
               type="text"
               value={stack}
               onChange={(e) => setStack(e.target.value)}
-              placeholder="e.g. Blockchain / Web3 Developer"
+              placeholder="e.g. Full-stack, Rust, Solana, AI"
               maxLength={36}
-              className="w-full bg-[#052414] border-2 border-[#FEE101] rounded px-3 py-2 text-xs text-[#FFFBE8] placeholder-[#FFFBE8]/40 focus:outline-none focus:border-[#FF3B77] transition-colors font-mono"
+              className={`w-full border-2 rounded px-3 py-2 text-xs focus:outline-none focus:border-[#FF3B77] transition-colors font-mono ${isDarkSite ? "bg-[#051F14] border-[#00FF88] text-white" : "bg-[#F7F1E1] border-[#0B6839] text-[#0A291A]"}`}
             />
           </div>
 
           {/* Builder Title (Auto-generated + Reroll) */}
           <div className="flex flex-col gap-1.5 pt-1">
             <div className="flex items-center justify-between">
-              <label className="text-[11px] font-bold text-[#FEE101] flex items-center gap-1">
+              <label className="text-[11px] font-bold flex items-center gap-1">
                 <Sparkles className="w-3.5 h-3.5 text-[#FF3B77]" />
                 <span>BUILDER CLASS TITLE</span>
               </label>
               <button
                 type="button"
                 onClick={handleRerollTitle}
-                className="tab-emerald px-2 py-0.5 text-[10px] font-mono flex items-center gap-1 rounded hover:bg-[#FF3B77] hover:text-white"
+                className="px-2 py-0.5 text-[10px] font-mono flex items-center gap-1 rounded border border-current hover:bg-[#FF3B77] hover:text-white"
               >
                 <RefreshCw className="w-3 h-3" />
                 <span>[ SHUFFLE ]</span>
               </button>
             </div>
-            <div className="w-full bg-[#052414] border-2 border-[#FEE101] rounded px-3 py-2.5 text-xs font-bold text-[#FF3B77] tracking-wider flex items-center justify-between font-mono">
+            <div className={`w-full border-2 rounded px-3 py-2.5 text-xs font-bold text-[#FF3B77] tracking-wider flex items-center justify-between font-mono ${isDarkSite ? "bg-[#051F14] border-[#00FF88]" : "bg-[#F7F1E1] border-[#0B6839]"}`}>
               <span>[ {builderTitle} ]</span>
-              <span className="text-[9px] bg-[#FEE101] text-[#072E1B] px-1.5 py-0.5 rounded font-bold">DETERMINISTIC</span>
+              <span className="text-[9px] bg-[#FF3B77] text-white px-1.5 py-0.5 rounded font-bold">DETERMINISTIC</span>
             </div>
           </div>
         </div>
@@ -587,7 +599,7 @@ export default function IdGenerator() {
           <button
             onClick={handleDownload}
             disabled={isAssetsLoading}
-            className="btn-emerald-gold py-3.5 px-4 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider disabled:opacity-50"
+            className="btn-hh-accent py-3.5 px-4 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider disabled:opacity-50"
           >
             <Download className="w-4 h-4" />
             <span>[ DOWNLOAD PNG ]</span>
@@ -597,7 +609,7 @@ export default function IdGenerator() {
           <button
             onClick={handleShare}
             disabled={isSharing || isAssetsLoading}
-            className="btn-emerald-pink py-3.5 px-4 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider disabled:opacity-50"
+            className="btn-hh-primary py-3.5 px-4 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider disabled:opacity-50"
           >
             <Share2 className={`w-4 h-4 ${isSharing ? "animate-spin" : ""}`} />
             <span>{isSharing ? "[ UPLOADING... ]" : "[ SHARE TO X ]"}</span>

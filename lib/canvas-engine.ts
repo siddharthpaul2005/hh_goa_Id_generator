@@ -68,7 +68,7 @@ export async function ensureFontsLoaded(): Promise<boolean> {
   if (typeof window === "undefined" || !document.fonts) return true;
   try {
     await Promise.all([
-      document.fonts.load("bold 56px Syne"),
+      document.fonts.load("bold 48px Syne"),
       document.fonts.load("bold 24px 'JetBrains Mono'"),
       document.fonts.load("18px 'JetBrains Mono'"),
     ]);
@@ -80,38 +80,7 @@ export async function ensureFontsLoaded(): Promise<boolean> {
 }
 
 /**
- * Draw Ornate Vintage Corner Filigree Swirls
- */
-function drawFiligreeCorner(ctx: CanvasRenderingContext2D, cx: number, cy: number, flipX: number, flipY: number) {
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.scale(flipX, flipY);
-
-  ctx.strokeStyle = "#FEE101";
-  ctx.lineWidth = 3;
-
-  // Outer spiral flourish
-  ctx.beginPath();
-  ctx.arc(40, 40, 24, Math.PI, 1.5 * Math.PI, false);
-  ctx.bezierCurveTo(40, 10, 20, 20, 10, 40);
-  ctx.stroke();
-
-  // Inner decorative loop
-  ctx.beginPath();
-  ctx.arc(28, 28, 10, 0, Math.PI * 2);
-  ctx.stroke();
-
-  // Small dot accent
-  ctx.fillStyle = "#FEE101";
-  ctx.beginPath();
-  ctx.arc(52, 14, 4, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.restore();
-}
-
-/**
- * Render Layer 1: Offscreen Background & Rich Emerald Decorative Poster Artwork
+ * Render Layer 1: Offscreen Background & Badge Frame Artwork (Light vs Dark Theme)
  */
 export function renderLayer1Background(mode: "single" | "squad", cardTheme: "light" | "dark" = "dark"): HTMLCanvasElement {
   const cacheKey = `${mode}:${cardTheme}`;
@@ -126,181 +95,195 @@ export function renderLayer1Background(mode: "single" | "squad", cardTheme: "lig
   const ctx = canvas.getContext("2d");
   if (!ctx) return canvas;
 
-  // 1. Rich Deep Emerald Green Card Background (#073520)
-  const isDark = cardTheme !== "light";
-  const bgColor = isDark ? "#052414" : "#0A4229";
-  const goldColor = "#FEE101";
-  const pinkColor = "#FF3B77";
+  const isDark = cardTheme === "dark";
 
+  // Palette definitions matching Image 1 (Dark) & Image 2 (Light)
+  const bgColor = isDark ? "#051F14" : "#FFFBE8";
+  const cardBorderColor = isDark ? "#00FF88" : "#0B6839";
+  const headerBg = isDark ? "#03170E" : "#0B6839";
+  const panelBg = isDark ? "#051F14" : "#FFFBE8";
+  const accentPink = "#FF3B77";
+  const accentGold = "#FEE101";
+
+  // 1. Base Card Background
   ctx.fillStyle = bgColor;
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-  // Subtle Palm / Sun Rise background texture overlay
+  // Subtle Sun Rise Texture Overlay (if loaded)
   if (brandImages.sunRise && brandImages.sunRise.complete && brandImages.sunRise.naturalWidth > 0) {
     ctx.save();
-    ctx.globalAlpha = 0.12;
+    ctx.globalAlpha = isDark ? 0.18 : 0.12;
     ctx.drawImage(brandImages.sunRise, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     ctx.restore();
   }
 
-  // 2. DOUBLE GOLD OUTER BORDER (#FEE101)
-  // Heavy Outer Gold Border
-  ctx.strokeStyle = goldColor;
-  ctx.lineWidth = 8;
-  ctx.beginPath();
-  ctx.roundRect(24, 24, CANVAS_WIDTH - 48, CANVAS_HEIGHT - 48, 20);
-  ctx.stroke();
-
-  // Thin Inner Gold Border
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.roundRect(38, 38, CANVAS_WIDTH - 76, CANVAS_HEIGHT - 76, 14);
-  ctx.stroke();
-
-  // 4 Hot Pink Corner Diamond Dots (#FF3B77)
-  const drawDiamond = (dx: number, dy: number) => {
+  // Palm tree silhouette accent at bottom
+  if (brandImages.footerTrees && brandImages.footerTrees.complete && brandImages.footerTrees.naturalWidth > 0) {
     ctx.save();
-    ctx.fillStyle = pinkColor;
-    ctx.translate(dx, dy);
-    ctx.rotate(Math.PI / 4);
-    ctx.fillRect(-7, -7, 14, 14);
+    ctx.globalAlpha = isDark ? 0.20 : 0.15;
+    const treeH = 340;
+    ctx.drawImage(brandImages.footerTrees, 0, CANVAS_HEIGHT - treeH, CANVAS_WIDTH, treeH);
     ctx.restore();
-  };
-  drawDiamond(38, 38);
-  drawDiamond(CANVAS_WIDTH - 38, 38);
-  drawDiamond(38, CANVAS_HEIGHT - 38);
-  drawDiamond(CANVAS_WIDTH - 38, CANVAS_HEIGHT - 38);
+  }
 
-  // Ornate Vintage Filigree Corner Ornaments
-  drawFiligreeCorner(ctx, 44, 44, 1, 1);
-  drawFiligreeCorner(ctx, CANVAS_WIDTH - 44, 44, -1, 1);
-  drawFiligreeCorner(ctx, 44, CANVAS_HEIGHT - 44, 1, -1);
-  drawFiligreeCorner(ctx, CANVAS_WIDTH - 44, CANVAS_HEIGHT - 44, -1, -1);
+  // 2. PHYSICAL EVENT BADGE BORDERS & LANYARD HOLE PUNCH
+  // Outer Heavy Border
+  ctx.strokeStyle = cardBorderColor;
+  ctx.lineWidth = 10;
+  ctx.strokeRect(18, 18, CANVAS_WIDTH - 36, CANVAS_HEIGHT - 36);
 
-  // 3. TOP HEADLINE BANNER SECTION (Y: 54px to 240px)
-  // Top Location Header: "+ GOA, INDIA +"
-  ctx.fillStyle = pinkColor;
-  ctx.font = "bold 18px 'JetBrains Mono', monospace";
-  ctx.textAlign = "center";
-  ctx.fillText("+ GOA, INDIA +", CANVAS_WIDTH / 2, 76);
+  // Inner Accent Border
+  ctx.lineWidth = 3;
+  ctx.strokeRect(32, 32, CANVAS_WIDTH - 64, CANVAS_HEIGHT - 64);
 
-  // Main Display Headline: "HACKER HOUSE" (Gold Display Serif)
-  ctx.fillStyle = goldColor;
-  ctx.font = "900 60px Syne, sans-serif";
-  ctx.fillText("HACKER", CANVAS_WIDTH / 2, 134);
-  ctx.fillText("HOUSE", CANVAS_WIDTH / 2, 192);
+  // LANYARD SLOT PUNCH HOLE (Top Center Punch)
+  ctx.save();
+  const slotW = 120;
+  const slotH = 22;
+  const slotX = (CANVAS_WIDTH - slotW) / 2;
+  const slotY = 22;
 
-  // Pink "गोवा" Script Overlaid right in the middle between HACKER and HOUSE
+  ctx.fillStyle = isDark ? "#030A06" : "#FAF6EE";
+  ctx.strokeStyle = cardBorderColor;
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.roundRect(slotX, slotY, slotW, slotH, 11);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.strokeStyle = accentGold;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(slotX + 4, slotY + 2, slotW - 8, slotH - 4);
+  ctx.restore();
+
+  // 3. TOP HEADER BAR (Y: 52px to 138px, H: 86px)
+  const headerY = 52;
+  const headerH = 86;
+
+  ctx.fillStyle = headerBg;
+  ctx.fillRect(48, headerY, CANVAS_WIDTH - 96, headerH);
+
+  ctx.strokeStyle = cardBorderColor;
+  ctx.lineWidth = 3;
+  ctx.strokeRect(48, headerY, CANVAS_WIDTH - 96, headerH);
+
+  // Hacker House Wordmark Logo (Left, Y: 68px)
+  if (brandImages.hackerHouse && brandImages.hackerHouse.complete && brandImages.hackerHouse.naturalWidth > 0) {
+    const hhW = 280;
+    const hhH = (brandImages.hackerHouse.naturalHeight / brandImages.hackerHouse.naturalWidth) * hhW;
+    ctx.drawImage(brandImages.hackerHouse, 64, headerY + (headerH - hhH) / 2, hhW, hhH);
+  } else {
+    ctx.fillStyle = isDark ? "#00FF88" : "#FFFBE8";
+    ctx.font = "bold 32px Syne, sans-serif";
+    ctx.fillText("HACKER HOUSE", 64, headerY + 54);
+  }
+
+  // Pink "गोवा" Devanagari Script (Center-Right, X: 580px, NO OVERLAP)
   if (brandImages.goaHindi && brandImages.goaHindi.complete && brandImages.goaHindi.naturalWidth > 0) {
     const ghW = 110;
     const ghH = (brandImages.goaHindi.naturalHeight / brandImages.goaHindi.naturalWidth) * ghW;
-    ctx.drawImage(brandImages.goaHindi, (CANVAS_WIDTH - ghW) / 2, 138, ghW, ghH);
+    ctx.drawImage(brandImages.goaHindi, 580, headerY + (headerH - ghH) / 2, ghW, ghH);
   }
 
-  // Subtitle: "BUILDER ID · 28 – 31 OCT 2026"
+  // Event Date Pill Badge (Top Far Right, X: 710px, W: 306px, NO OVERLAP)
+  ctx.fillStyle = accentPink;
+  ctx.strokeStyle = isDark ? "#00FF88" : "#0B6839";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(710, headerY + 12, 306, 62, 10);
+  ctx.fill();
+  ctx.stroke();
+
   ctx.fillStyle = "#FFFBE8";
-  ctx.font = "bold 16px 'JetBrains Mono', monospace";
-  ctx.fillText("BUILDER ID  ·  28 – 31 OCT 2026", CANVAS_WIDTH / 2, 230);
+  ctx.font = "bold 13px 'JetBrains Mono', monospace";
+  ctx.textAlign = "center";
+  ctx.fillText("OCT 28 - 31, 2026", 863, headerY + 36);
+  ctx.fillStyle = accentGold;
+  ctx.font = "bold 11px 'JetBrains Mono', monospace";
+  ctx.fillText("GOA, INDIA · VIP ACCESS", 863, headerY + 56);
   ctx.textAlign = "left";
 
-  // 4. PASTED PHOTO WELL BOUNDING BOX (Y: 260px to 810px, Height 550px)
-  // Single Mode vs Squad Mode
-  const photoW = 460;
-  const photoH = 550;
-  const photoX = (CANVAS_WIDTH - photoW) / 2; // 310
-  const photoY = 260;
+  // 4. PHOTO WELL CONTAINER (Y: 152px to 612px, H: 460px)
+  const photoX = 48;
+  const photoY = 152;
+  const photoW = CANVAS_WIDTH - 96;
+  const photoH = 460;
 
-  if (mode === "single") {
-    // Drop Shadow behind photo frame
-    ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
-    ctx.beginPath();
-    ctx.roundRect(photoX + 10, photoY + 10, photoW, photoH, 12);
-    ctx.fill();
+  ctx.strokeStyle = cardBorderColor;
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.roundRect(photoX, photoY, photoW, photoH, 12);
+  ctx.stroke();
 
-    // Yellow/Gold Polaroid-Style Photo Paper Frame (#FEE101)
-    ctx.fillStyle = goldColor;
-    ctx.strokeStyle = "#000000";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.roundRect(photoX, photoY, photoW, photoH, 12);
-    ctx.fill();
-    ctx.stroke();
+  // Corner Ticks
+  ctx.fillStyle = accentPink;
+  ctx.fillRect(photoX - 4, photoY - 4, 10, 10);
+  ctx.fillRect(photoX + photoW - 6, photoY - 4, 10, 10);
+  ctx.fillRect(photoX - 4, photoY + photoH - 6, 10, 10);
+  ctx.fillRect(photoX + photoW - 6, photoY + photoH - 6, 10, 10);
 
-    // Hot Pink Diamond accent on top right corner of photo frame
-    drawDiamond(photoX + photoW - 6, photoY + 6);
-  } else {
-    // Squad Grid Container (Y: 260 to 810)
-    const squadW = CANVAS_WIDTH - 120;
-    const squadX = 60;
+  // 5. LOWER CONTENT PANEL (Y: 624px to 1310px)
+  const bottomY = 624;
+  const bottomH = CANVAS_HEIGHT - bottomY - 36;
 
-    ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
-    ctx.fillRect(squadX + 8, photoY + 8, squadW, photoH);
+  ctx.fillStyle = panelBg;
+  ctx.beginPath();
+  ctx.roundRect(48, bottomY, photoW, bottomH, 12);
+  ctx.fill();
 
-    ctx.fillStyle = goldColor;
-    ctx.strokeStyle = "#000000";
-    ctx.lineWidth = 4;
-    ctx.fillRect(squadX, photoY, squadW, photoH);
-    ctx.strokeRect(squadX, photoY, squadW, photoH);
-  }
+  ctx.strokeStyle = cardBorderColor;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.roundRect(48, bottomY, photoW, bottomH, 12);
+  ctx.stroke();
 
   cachedLayer1Canvas = canvas;
   return canvas;
 }
 
 /**
- * Render Layer 2: Photo Layer (Pasted Portrait Photo Effect)
+ * Render Layer 2: Photo Layer (Cover Crop + Drag Position offset)
  */
 export function drawPhotoLayer(
   ctx: CanvasRenderingContext2D,
   cardData: CardData
 ) {
-  const photoW = 460;
-  const photoH = 550;
-  const photoX = (CANVAS_WIDTH - photoW) / 2; // 310
-  const photoY = 260;
+  const photoX = 48;
+  const photoY = 152;
+  const photoW = CANVAS_WIDTH - 96;
+  const photoH = 460;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect(photoX, photoY, photoW, photoH, 12);
+  ctx.clip();
 
   if (cardData.mode === "single") {
-    // Inner Photo Crop Window (with 12px padding around paper frame)
-    const innerPadding = 12;
-    const innerX = photoX + innerPadding;
-    const innerY = photoY + innerPadding;
-    const innerW = photoW - (innerPadding * 2);
-    const innerH = photoH - (innerPadding * 2);
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.roundRect(innerX, innerY, innerW, innerH, 8);
-    ctx.clip();
-
     const photoState = cardData.photos[0];
     if (photoState && photoState.image) {
-      drawSinglePhoto(ctx, photoState.image, innerX, innerY, innerW, innerH, photoState.cropX, photoState.cropY, photoState.scale || 1);
+      drawSinglePhoto(ctx, photoState.image, photoX, photoY, photoW, photoH, photoState.cropX, photoState.cropY, photoState.scale || 1);
     } else {
-      drawPlaceholderPhoto(ctx, innerX, innerY, innerW, innerH, "UPLOAD BUILDER PHOTO");
+      drawPlaceholderPhoto(ctx, photoX, photoY, photoW, photoH, "UPLOAD BUILDER PHOTO");
     }
-
-    // Inner Subtle Shadow around photo edge
-    ctx.strokeStyle = "rgba(0, 0, 0, 0.4)";
-    ctx.lineWidth = 3;
-    ctx.strokeRect(innerX, innerY, innerW, innerH);
-
-    ctx.restore();
   } else {
-    // Squad Grid Photos (Y: 260 to 810)
-    const squadW = CANVAS_WIDTH - 144;
-    const squadX = 72;
-    const squadY = photoY + 12;
-    const squadH = photoH - 24;
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(squadX, squadY, squadW, squadH);
-    ctx.clip();
-
-    drawSquadPhotos(ctx, cardData.photos, squadX, squadY, squadW, squadH);
-
-    ctx.restore();
+    drawSquadPhotos(ctx, cardData.photos, photoX, photoY, photoW, photoH);
   }
+
+  // Inner Shadow / Vignette for photo well
+  const grad = ctx.createRadialGradient(
+    photoX + photoW / 2,
+    photoY + photoH / 2,
+    photoW * 0.3,
+    photoX + photoW / 2,
+    photoY + photoH / 2,
+    photoW * 0.7
+  );
+  grad.addColorStop(0, "rgba(0, 0, 0, 0)");
+  grad.addColorStop(1, "rgba(0, 0, 0, 0.3)");
+  ctx.fillStyle = grad;
+  ctx.fillRect(photoX, photoY, photoW, photoH);
+
+  ctx.restore();
 }
 
 /**
@@ -355,7 +338,7 @@ function drawSquadPhotos(
 ) {
   const count = Math.min(Math.max(photos.length, 2), 4);
 
-  ctx.fillStyle = "#073520";
+  ctx.fillStyle = "#03170E";
   ctx.fillRect(x, y, w, h);
 
   let grid: { x: number; y: number; w: number; h: number; name: string }[] = [];
@@ -390,15 +373,15 @@ function drawSquadPhotos(
       drawPlaceholderPhoto(ctx, cell.x, cell.y, cell.w, cell.h, `TEAMMATE ${idx + 1}`);
     }
 
-    ctx.strokeStyle = "#FEE101";
+    ctx.strokeStyle = "#FF3B77";
     ctx.lineWidth = 3;
     ctx.strokeRect(cell.x, cell.y, cell.w, cell.h);
 
     ctx.fillStyle = "#FF3B77";
-    ctx.fillRect(cell.x, cell.y + cell.h - 34, cell.w, 34);
+    ctx.fillRect(cell.x, cell.y + cell.h - 32, cell.w, 32);
 
     ctx.fillStyle = "#FFFBE8";
-    ctx.font = "bold 14px 'JetBrains Mono', monospace";
+    ctx.font = "bold 13px 'JetBrains Mono', monospace";
     ctx.textAlign = "center";
     ctx.fillText(cell.name.toUpperCase(), cell.x + cell.w / 2, cell.y + cell.h - 11);
     ctx.textAlign = "left";
@@ -418,10 +401,10 @@ function drawPlaceholderPhoto(
   h: number,
   label: string
 ) {
-  ctx.fillStyle = "#0A4229";
+  ctx.fillStyle = "#F4EFE2";
   ctx.fillRect(x, y, w, h);
 
-  ctx.strokeStyle = "rgba(254, 225, 1, 0.2)";
+  ctx.strokeStyle = "rgba(11, 104, 57, 0.15)";
   ctx.lineWidth = 1;
   for (let gx = x; gx < x + w; gx += 36) {
     ctx.beginPath(); ctx.moveTo(gx, y); ctx.lineTo(gx, y + h); ctx.stroke();
@@ -439,25 +422,25 @@ function drawPlaceholderPhoto(
   ctx.arc(cx, cy, radius, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.strokeStyle = "#FEE101";
+  ctx.strokeStyle = "#0B6839";
   ctx.lineWidth = 4;
   ctx.stroke();
 
-  ctx.fillStyle = "#FEE101";
-  ctx.font = "bold 20px 'JetBrains Mono', monospace";
+  ctx.fillStyle = "#0B6839";
+  ctx.font = "bold 18px 'JetBrains Mono', monospace";
   ctx.textAlign = "center";
-  ctx.fillText(label, cx, cy + radius + 36);
+  ctx.fillText(label, cx, cy + radius + 34);
   
-  ctx.fillStyle = "#FFFBE8";
-  ctx.font = "bold 14px 'JetBrains Mono', monospace";
-  ctx.fillText("TAP OR DRAG PHOTO HERE", cx, cy + radius + 62);
+  ctx.fillStyle = "#FF3B77";
+  ctx.font = "bold 13px 'JetBrains Mono', monospace";
+  ctx.fillText("TAP OR DRAG PHOTO HERE", cx, cy + radius + 56);
   ctx.textAlign = "left";
 }
 
 /**
- * Render HIGH-DENSITY REALISTIC BARCODE WITH QUIET ZONE BOX
+ * Render HIGH-DENSITY REALISTIC CODE-128 BARCODE WITH QUIET ZONE BOX
  */
-function drawBarcodeBox(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, codeText: string) {
+function drawRealisticBarcodeBox(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, codeText: string) {
   ctx.fillStyle = "#FFFFFF";
   ctx.fillRect(x, y, w, h);
 
@@ -465,13 +448,13 @@ function drawBarcodeBox(ctx: CanvasRenderingContext2D, x: number, y: number, w: 
   ctx.lineWidth = 2;
   ctx.strokeRect(x, y, w, h);
 
-  const barCount = 44;
+  const barCount = 42;
   const paddingX = 10;
   const usableW = w - (paddingX * 2);
   const step = usableW / barCount;
 
   ctx.fillStyle = "#000000";
-  const pattern = [2, 1, 1, 3, 1, 2, 3, 1, 1, 2, 1, 3, 2, 2, 1, 1, 3, 1, 2, 1, 1, 3, 2, 1, 2, 2, 1, 3, 1, 1, 2, 3, 1, 2, 1, 1, 3, 2, 1, 1, 2, 3, 1, 2];
+  const pattern = [2, 1, 1, 3, 1, 2, 3, 1, 1, 2, 1, 3, 2, 2, 1, 1, 3, 1, 2, 1, 1, 3, 2, 1, 2, 2, 1, 3, 1, 1, 2, 3, 1, 2, 1, 1, 3, 2, 1, 1, 2, 3];
 
   for (let i = 0; i < barCount; i++) {
     const widthMultiplier = pattern[i % pattern.length];
@@ -489,113 +472,204 @@ function drawBarcodeBox(ctx: CanvasRenderingContext2D, x: number, y: number, w: 
 }
 
 /**
- * Render Layer 3: Text & Rich Emerald Poster Metadata (Positioned Below Photo with Generous Breathing Room)
+ * Render Layer 3: Text & Rich Credential Metadata Layer (Perfect Precision Matching Image 1 & 2)
  */
 export function drawTextLayer(
   ctx: CanvasRenderingContext2D,
   cardData: CardData
 ) {
-  let currentY = 850; // Positioned below photo (Y: 260 + 550 = 810, + 40px spacing)
+  const isDark = cardData.cardTheme === "dark";
+  const accentPink = "#FF3B77";
+  const accentGold = "#FEE101";
+  const cardBorderColor = isDark ? "#00FF88" : "#0B6839";
+  const titleContainerBg = isDark ? "#03170E" : "#0B6839";
+  const titleTextColor = isDark ? "#00FF88" : "#FEE101";
+  const statusTextColor = "#FF3B77";
+  const textColorPrimary = isDark ? "#00FF88" : "#0B6839";
+  const tagBg = isDark ? "#051F14" : "#FFFBE8";
 
+  // 1. HOT PINK BUILDER NAME RIBBON BANNER (Y: 644px to 720px, H: 76px)
   const nameText = (cardData.name || "BUILDER NAME").toUpperCase();
-  const titleText = (cardData.builderTitle || "WEB3 ARCHITECT").toUpperCase();
-  const stackText = (cardData.stack || "BLOCKCHAIN / WEB3 DEVELOPER").toUpperCase();
-  const serialId = cardData.nodeId || `HHG26-${Math.floor(1000 + Math.random() * 9000)}`;
+  const bannerY = 644;
+  const bannerH = 76;
 
-  // 1. LARGE BUILDER NAME (Dual-tone Gold & White, Display Serif Syne Font 56px)
-  ctx.font = "900 56px Syne, sans-serif";
-  let fontSize = 56;
-  let nameWidth = ctx.measureText(nameText).width;
-  while (nameWidth > 900 && fontSize > 28) {
-    fontSize -= 2;
-    ctx.font = `900 ${fontSize}px Syne, sans-serif`;
-    nameWidth = ctx.measureText(nameText).width;
-  }
+  ctx.fillStyle = accentPink;
+  ctx.fillRect(64, bannerY, CANVAS_WIDTH - 128, bannerH);
 
-  // Dual-tone split (First word Gold #FEE101, rest White #FFFFFF)
-  const nameParts = nameText.split(" ");
-  ctx.textAlign = "center";
+  ctx.strokeStyle = cardBorderColor;
+  ctx.lineWidth = 4;
+  ctx.strokeRect(64, bannerY, CANVAS_WIDTH - 128, bannerH);
 
-  if (nameParts.length > 1) {
-    const firstWord = nameParts[0] + " ";
-    const restWords = nameParts.slice(1).join(" ");
-    
-    const firstW = ctx.measureText(firstWord).width;
-    const restW = ctx.measureText(restWords).width;
-    const totalW = firstW + restW;
-    const startX = (CANVAS_WIDTH - totalW) / 2;
-
-    ctx.textAlign = "left";
-    ctx.fillStyle = "#FEE101";
-    ctx.fillText(firstWord, startX, currentY);
-
-    ctx.fillStyle = "#FFFFFF";
-    ctx.fillText(restWords, startX + firstW, currentY);
-    ctx.textAlign = "center";
-  } else {
-    ctx.fillStyle = "#FEE101";
-    ctx.fillText(nameText, CANVAS_WIDTH / 2, currentY);
-  }
-
-  currentY += 56;
-
-  // 2. BUILDER CLASS TITLE BADGE (Hot Pink Pill Container #FF3B77)
-  ctx.font = "bold 22px 'JetBrains Mono', monospace";
-  const titleW = Math.min(ctx.measureText(titleText).width + 48, 860);
-
-  ctx.fillStyle = "#FF3B77";
-  ctx.strokeStyle = "#000000";
-  ctx.lineWidth = 2;
+  // Ribbon Swallowtail Ends
+  ctx.fillStyle = "#E82561";
   ctx.beginPath();
-  ctx.roundRect((CANVAS_WIDTH - titleW) / 2, currentY, titleW, 46, 23);
+  ctx.moveTo(48, bannerY + 14);
+  ctx.lineTo(64, bannerY);
+  ctx.lineTo(64, bannerY + bannerH);
+  ctx.lineTo(48, bannerY + bannerH - 14);
+  ctx.closePath();
   ctx.fill();
   ctx.stroke();
 
+  ctx.beginPath();
+  ctx.moveTo(CANVAS_WIDTH - 48, bannerY + 14);
+  ctx.lineTo(CANVAS_WIDTH - 64, bannerY);
+  ctx.lineTo(CANVAS_WIDTH - 64, bannerY + bannerH);
+  ctx.lineTo(CANVAS_WIDTH - 48, bannerY + bannerH - 14);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Builder Name Text (Centered, Bold White)
+  ctx.font = "900 48px Syne, sans-serif";
+  let fontSize = 48;
+  let textWidth = ctx.measureText(nameText).width;
+  while (textWidth > 820 && fontSize > 24) {
+    fontSize -= 2;
+    ctx.font = `900 ${fontSize}px Syne, sans-serif`;
+    textWidth = ctx.measureText(nameText).width;
+  }
+
   ctx.fillStyle = "#FFFFFF";
-  ctx.fillText(titleText, CANVAS_WIDTH / 2, currentY + 31);
+  ctx.textAlign = "center";
+  ctx.fillText(nameText, CANVAS_WIDTH / 2, bannerY + 52);
+  ctx.textAlign = "left";
 
-  currentY += 76;
+  // 2. BUILDER CLASS TITLE PILL BADGE (Y: 738px to 784px, H: 46px)
+  const titleText = `[ ${cardData.builderTitle || "PROTOCOL VANGUARD"} ]`;
+  const titleY = 738;
+  ctx.font = "bold 22px 'JetBrains Mono', monospace";
+  const titleW = Math.min(ctx.measureText(titleText).width + 40, 920);
 
-  // 3. TEAM NAME (if entered)
+  ctx.fillStyle = titleContainerBg;
+  ctx.strokeStyle = cardBorderColor;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect((CANVAS_WIDTH - titleW) / 2, titleY, titleW, 46, 8);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = titleTextColor;
+  ctx.textAlign = "center";
+  ctx.fillText(titleText, CANVAS_WIDTH / 2, titleY + 31);
+  ctx.textAlign = "left";
+
+  // 3. TEAM NAME FIELD (if specified) (Y: 796px)
+  let currentY = titleY + 58;
   if (cardData.teamName && cardData.teamName.trim().length > 0) {
-    ctx.fillStyle = "#FEE101";
+    const teamText = `TEAM: ${cardData.teamName.trim().toUpperCase()}`;
     ctx.font = "bold 18px 'JetBrains Mono', monospace";
-    ctx.fillText(`TEAM: ${cardData.teamName.trim().toUpperCase()}`, CANVAS_WIDTH / 2, currentY);
+    ctx.fillStyle = accentGold;
+    ctx.textAlign = "center";
+    ctx.fillText(teamText, CANVAS_WIDTH / 2, currentY + 18);
+    ctx.textAlign = "left";
     currentY += 32;
   }
 
-  // 4. STACK / ROLE LINE
-  ctx.fillStyle = "#FFFBE8";
-  ctx.font = "bold 16px 'JetBrains Mono', monospace";
-  ctx.fillText(stackText, CANVAS_WIDTH / 2, currentY);
+  // 4. BUILDER ID & CODE-128 BARCODE ROW (Y: 830px to 894px)
+  const serialId = cardData.nodeId || `HHG26-${Math.floor(1000 + Math.random() * 9000)}`;
 
-  currentY += 36;
-
-  // 5. DOTTED SEPARATOR LINE
-  ctx.fillStyle = "#FEE101";
+  // Left: Builder ID & Status Access Text
+  ctx.fillStyle = textColorPrimary;
   ctx.font = "bold 20px 'JetBrains Mono', monospace";
-  ctx.fillText("·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·", CANVAS_WIDTH / 2, currentY);
+  ctx.fillText(`BUILDER ID: ${serialId}`, 76, currentY + 24);
 
-  currentY += 32;
+  ctx.fillStyle = statusTextColor;
+  ctx.font = "bold 13px 'JetBrains Mono', monospace";
+  ctx.fillText("STATUS: VERIFIED BUILDER - ALL STAGES ACCESS", 76, currentY + 48);
 
-  // 6. REALISTIC BARCODE BOX & SERIAL ID
-  const barcodeW = 280;
-  const barcodeH = 58;
-  drawBarcodeBox(ctx, (CANVAS_WIDTH - barcodeW) / 2, currentY, barcodeW, barcodeH, serialId);
+  // Right: Dedicated Code-128 Barcode Box (X: 700px, W: 300px, H: 64px, NO OVERLAP)
+  drawRealisticBarcodeBox(ctx, 700, currentY, 300, 64, serialId);
 
-  currentY += 86;
+  currentY += 78;
 
-  // 7. FOOTER DECORATIVE ACCENTS (HACKER HOUSE GOA 2026 ... #FRAMEINGOA)
-  ctx.fillStyle = "#FEE101";
-  ctx.font = "bold 15px 'JetBrains Mono', monospace";
+  // Dotted Separator Line
+  ctx.save();
+  ctx.strokeStyle = textColorPrimary;
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6, 6]);
+  ctx.beginPath();
+  ctx.moveTo(76, currentY);
+  ctx.lineTo(CANVAS_WIDTH - 76, currentY);
+  ctx.stroke();
+  ctx.restore();
+
+  currentY += 22;
+
+  // 5. TECHNICAL STACK & SKILLS TAG PILLS (Y: ~934px)
+  ctx.fillStyle = textColorPrimary;
+  ctx.font = "bold 12px 'JetBrains Mono', monospace";
+  ctx.fillText("TECHNICAL STACK & SKILLS:", 76, currentY);
+
+  const rawStack = cardData.stack || "Full-stack, Rust, Solana, AI";
+  const tags = rawStack.split(/[,/|]+/).map(s => s.trim().toUpperCase()).filter(Boolean).slice(0, 4);
+
+  let currentTagX = 76;
+  const tagPillY = currentY + 10;
+
+  tags.forEach(tag => {
+    ctx.font = "bold 13px 'JetBrains Mono', monospace";
+    const tagText = `[ ${tag} ]`;
+    const tagWidth = ctx.measureText(tagText).width + 16;
+
+    if (currentTagX + tagWidth < CANVAS_WIDTH - 240) {
+      ctx.fillStyle = tagBg;
+      ctx.strokeStyle = cardBorderColor;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(currentTagX, tagPillY, tagWidth, 32, 6);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = textColorPrimary;
+      ctx.fillText(tagText, currentTagX + 8, tagPillY + 21);
+
+      currentTagX += tagWidth + 10;
+    }
+  });
+
+  // #FRAMEINGOA HOT PINK STAMP BADGE (Bottom Right Tag, X: 780px, NO OVERLAP)
+  const stampX = 780;
+  const stampY = tagPillY - 6;
+  ctx.fillStyle = accentPink;
+  ctx.strokeStyle = cardBorderColor;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(stampX, stampY, 220, 44, 6);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = "#FFFBE8";
+  ctx.font = "bold 12px 'JetBrains Mono', monospace";
+  ctx.textAlign = "center";
+  ctx.fillText("#FRAMEINGOA", stampX + 110, stampY + 20);
+  ctx.fillStyle = accentGold;
+  ctx.font = "bold 10px 'JetBrains Mono', monospace";
+  ctx.fillText("247 BUILDERS", stampX + 110, stampY + 35);
   ctx.textAlign = "left";
-  ctx.fillText("· HACKER HOUSE GOA 2026 ·", 68, currentY);
 
-  ctx.fillStyle = "#FF3B77";
-  ctx.font = "bold 15px 'JetBrains Mono', monospace";
-  ctx.textAlign = "right";
-  ctx.fillText("#FRAMEINGOA ·", CANVAS_WIDTH - 68, currentY);
-  ctx.textAlign = "left";
+  currentY = tagPillY + 68;
+
+  // 6. FOOTER ROW: DEVFOLIO GOLD BADGE + 2:47PM STUDIO LOGO (Y: ~1040px)
+  // Left: Devfolio Gold Badge
+  ctx.fillStyle = accentGold;
+  ctx.strokeStyle = cardBorderColor;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(76, currentY, 360, 38, 6);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = "#0B6839";
+  ctx.font = "bold 13px 'JetBrains Mono', monospace";
+  ctx.fillText("247 ELITE BUILDERS · RESIDENCY", 92, currentY + 24);
+
+  // Right: 2:47PM Studio Logo (X: 830px, W: 140px, NO OVERLAP)
+  if (brandImages.studio247 && brandImages.studio247.complete && brandImages.studio247.naturalWidth > 0) {
+    const stW = 140;
+    const stH = (brandImages.studio247.naturalHeight / brandImages.studio247.naturalWidth) * stW;
+    ctx.drawImage(brandImages.studio247, 830, currentY - 5, stW, stH);
+  }
 }
 
 /**

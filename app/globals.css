@@ -2,69 +2,74 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: 7 46 27;   /* #072E1B Rich Deep Emerald */
-  --foreground: 255 251 232; /* #FFFBE8 Cream */
+/* DARK THEME DEFAULTS */
+.theme-dark {
+  --bg-main: #051A10;
+  --text-main: #FFFBE8;
+  --panel-bg: #0A3D24;
+  --border-color: #00FF88;
+  --accent-gold: #FEE101;
+  --accent-pink: #FF3B77;
+}
+
+/* LIGHT THEME DEFAULTS */
+.theme-light {
+  --bg-main: #FAF6EE;
+  --text-main: #0A291A;
+  --panel-bg: #FFFBE8;
+  --border-color: #0B6839;
+  --accent-gold: #FEE101;
+  --accent-pink: #FF3B77;
 }
 
 body {
-  color: #FFFBE8;
-  background: #072E1B;
   font-family: var(--font-jetbrains-mono), monospace;
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
+  transition: background-color 200ms ease, color 200ms ease;
 }
 
-/* Custom Scrollbar - Deep Emerald & Gold */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #052214;
+  background: #051A10;
 }
 ::-webkit-scrollbar-thumb {
-  background: #FEE101;
+  background: #0B6839;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #FF3B77;
 }
 
-/* Rich Emerald Card Containers */
-.emerald-card {
-  background: #0A3D24;
-  border: 3px solid #FEE101;
-  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.6);
+/* CARDS & PANELS */
+.hh-card-dark {
+  background: #051F14;
+  border: 3px solid #00FF88;
+  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.7);
 }
 
-.emerald-panel {
-  background: #062B19;
-  border: 2px solid #FEE101;
+.hh-card-light {
+  background: #FFFBE8;
+  border: 3px solid #0B6839;
+  box-shadow: 6px 6px 0px rgba(11, 104, 57, 0.25);
 }
 
-/* RETRO EMERALD & GOLD BUTTONS */
-.btn-emerald-gold {
-  background: #FEE101;
-  color: #072E1B;
-  font-family: var(--font-jetbrains-mono), monospace;
-  font-weight: 800;
-  border: 2px solid #000000;
-  box-shadow: 4px 4px 0px #000000;
-  border-radius: 4px;
-  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
-}
-.btn-emerald-gold:hover {
-  background: #FFF066;
-  transform: scale(1.02);
-  box-shadow: 6px 6px 0px #000000;
-}
-.btn-emerald-gold:active {
-  transform: translate(3px, 3px) scale(0.98);
-  box-shadow: 1px 1px 0px #000000;
+.hh-panel-dark {
+  background: #0A291A;
+  border: 2px solid #00FF88;
 }
 
-.btn-emerald-pink {
+.hh-panel-light {
+  background: #F4EFE2;
+  border: 2px solid #0B6839;
+}
+
+/* BUTTONS */
+.btn-hh-primary {
   background: #FF3B77;
   color: #FFFFFF;
   font-family: var(--font-jetbrains-mono), monospace;
@@ -74,35 +79,54 @@ body {
   border-radius: 4px;
   transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
 }
-.btn-emerald-pink:hover {
+.btn-hh-primary:hover {
   background: #FF5288;
   transform: scale(1.02);
   box-shadow: 6px 6px 0px #000000;
 }
-.btn-emerald-pink:active {
+.btn-hh-primary:active {
+  transform: translate(3px, 3px) scale(0.98);
+  box-shadow: 1px 1px 0px #000000;
+}
+
+.btn-hh-accent {
+  background: #FEE101;
+  color: #051A10;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-weight: 800;
+  border: 2px solid #000000;
+  box-shadow: 4px 4px 0px #000000;
+  border-radius: 4px;
+  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+.btn-hh-accent:hover {
+  background: #FFF066;
+  transform: scale(1.02);
+  box-shadow: 6px 6px 0px #000000;
+}
+.btn-hh-accent:active {
   transform: translate(3px, 3px) scale(0.98);
   box-shadow: 1px 1px 0px #000000;
 }
 
 /* TABS */
-.tab-emerald {
-  border: 2px solid #FEE101;
-  background: #062B19;
-  color: #FEE101;
+.tab-hh-inactive {
+  border: 2px solid currentColor;
+  opacity: 0.7;
   font-family: var(--font-jetbrains-mono), monospace;
   font-weight: 700;
   transition: all 120ms ease;
 }
-.tab-emerald-active {
-  border: 2px solid #FEE101;
+.tab-hh-active {
+  border: 2px solid #000000;
   background: #FF3B77;
   color: #FFFFFF;
   font-weight: 800;
   box-shadow: 3px 3px 0px #000000;
 }
 
-/* Noise / Grain Overlay */
-.bg-emerald-grain {
+/* Background Grain Overlay */
+.bg-hh-grain {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E");
 }
 
