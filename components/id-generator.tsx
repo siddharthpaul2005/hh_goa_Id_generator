@@ -12,8 +12,8 @@ import {
   Move, 
   Camera, 
   Check, 
-  AlertCircle,
-  Zap
+  Zap,
+  Terminal
 } from "lucide-react";
 import { 
   CardData, 
@@ -45,10 +45,11 @@ export default function IdGenerator() {
   const [isSharing, setIsSharing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Canvas Refs
+  // Canvas & Container Refs
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const exportCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   // Pointer Drag State
   const isDraggingRef = useRef(false);
@@ -69,7 +70,31 @@ export default function IdGenerator() {
     init();
   }, []);
 
-  // 2. Auto-generate Builder Title whenever Name or Stack changes (unless user manually override)
+  // 2. Interactive Mouse Container Radial Glow (requestAnimationFrame throttled)
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    let mouseRaf: number | null = null;
+    const handleMouseMove = (e: MouseEvent) => {
+      if (mouseRaf) cancelAnimationFrame(mouseRaf);
+      mouseRaf = requestAnimationFrame(() => {
+        const rect = container.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        container.style.setProperty("--mouse-x", `${x}px`);
+        container.style.setProperty("--mouse-y", `${y}px`);
+      });
+    };
+
+    container.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      container.removeEventListener("mousemove", handleMouseMove);
+      if (mouseRaf) cancelAnimationFrame(mouseRaf);
+    };
+  }, []);
+
+  // 3. Auto-generate Builder Title whenever Name or Stack changes
   useEffect(() => {
     if (!titleOverridden) {
       const generated = generateBuilderTitle(name, stack);
@@ -77,14 +102,14 @@ export default function IdGenerator() {
     }
   }, [name, stack, titleOverridden]);
 
-  // 3. Reroll Title manually
+  // 4. Reroll Title manually
   const handleRerollTitle = () => {
     setTitleOverridden(true);
     const newTitle = generateBuilderTitle(name + Math.random().toString(), stack);
     setBuilderTitle(newTitle);
   };
 
-  // 4. Composite Card onto Preview & Export Canvases
+  // 5. Composite Card onto Preview & Export Canvases
   const triggerRedraw = useCallback(() => {
     if (rafIdRef.current) {
       cancelAnimationFrame(rafIdRef.current);
@@ -109,23 +134,19 @@ export default function IdGenerator() {
     });
   }, [mode, photos, name, stack, builderTitle]);
 
-  // Redraw when card state changes
   useEffect(() => {
     if (!isAssetsLoading) {
       triggerRedraw();
     }
   }, [isAssetsLoading, mode, photos, name, stack, builderTitle, triggerRedraw]);
 
-  // 5. Image File Handler (with HEIC support + off-main-thread createImageBitmap)
+  // 6. Image File Handler (with HEIC support + off-main-thread createImageBitmap)
   const processImageFile = async (file: File, targetIdx: number) => {
     setIsUploading(true);
     showToast("Processing image...");
 
     try {
-      // Convert HEIC if needed
       const processedBlob = await convertHeicToJpeg(file);
-      
-      // Decode off main thread using createImageBitmap
       const bitmap = await createImageBitmap(processedBlob);
 
       setPhotos((prev) => {
@@ -159,14 +180,13 @@ export default function IdGenerator() {
     if (mode === "single") {
       processImageFile(files[0], 0);
     } else {
-      // Squad mode: process selected files
       Array.from(files).slice(0, 4).forEach((file, idx) => {
         processImageFile(file, idx);
       });
     }
   };
 
-  // 6. Pointer Drag-to-Reposition Photo within Canvas
+  // 7. Pointer Drag-to-Reposition Photo
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     isDraggingRef.current = true;
     lastPointerPosRef.current = { x: e.clientX, y: e.clientY };
@@ -180,7 +200,6 @@ export default function IdGenerator() {
     const dy = e.clientY - lastPointerPosRef.current.y;
     lastPointerPosRef.current = { x: e.clientX, y: e.clientY };
 
-    // Scale displacement from preview canvas CSS size to actual 1080x1350 resolution
     const canvas = previewCanvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
@@ -206,13 +225,13 @@ export default function IdGenerator() {
     } catch {}
   };
 
-  // 7. Toast Helper
+  // 8. Toast Helper
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // 8. Mode Switch Handler
+  // 9. Mode Switch Handler
   const handleModeChange = (newMode: "single" | "squad") => {
     setMode(newMode);
     if (newMode === "squad" && photos.length < 2) {
@@ -223,7 +242,7 @@ export default function IdGenerator() {
     }
   };
 
-  // 9. Squad Photo Slot Management
+  // 10. Squad Photo Slot Management
   const addSquadMember = () => {
     if (photos.length >= 4) return;
     setPhotos((prev) => [
@@ -240,7 +259,7 @@ export default function IdGenerator() {
     });
   };
 
-  // 10. Download Action: Canvas.toBlob -> real 1080x1350 PNG file
+  // 11. Download Action: Canvas.toBlob -> 1080x1350 PNG file
   const handleDownload = () => {
     const canvas = exportCanvasRef.current || previewCanvasRef.current;
     if (!canvas) return;
@@ -262,7 +281,7 @@ export default function IdGenerator() {
     }, "image/png");
   };
 
-  // 11. Share to X Action: Upload Blob -> Vercel Blob -> Share / Native / Intent
+  // 12. Share to X Action: Upload Blob -> Vercel Blob -> Share / Intent
   const handleShare = async () => {
     const canvas = exportCanvasRef.current || previewCanvasRef.current;
     if (!canvas) return;
@@ -279,7 +298,6 @@ export default function IdGenerator() {
 
       const file = new File([blob], "hh-goa-2026-builder-id.png", { type: "image/png" });
 
-      // Upload PNG Blob to Vercel Blob API
       const formData = new FormData();
       formData.append("file", file);
 
@@ -296,13 +314,11 @@ export default function IdGenerator() {
         blobUrl = data.url;
         sharePageUrl = `${window.location.origin}/c/${data.id}?url=${encodeURIComponent(blobUrl)}&name=${encodeURIComponent(name || "Builder")}&title=${encodeURIComponent(builderTitle)}&stack=${encodeURIComponent(stack || "Full-stack")}`;
       } else {
-        console.warn("Vercel Blob upload warning, fallback to direct landing URL");
         sharePageUrl = `${window.location.origin}?name=${encodeURIComponent(name || "Builder")}`;
       }
 
       const caption = `Just generated my HH Goa 2026 Builder ID 🌴⚡ [${builderTitle}] · ${stack || "Full-stack"} — make yours: ${sharePageUrl} #FrameInGoa`;
 
-      // Try Native Mobile Web Share API first
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
           await navigator.share({
@@ -314,11 +330,10 @@ export default function IdGenerator() {
           setIsSharing(false);
           return;
         } catch (shareErr) {
-          console.log("Native file share cancelled or unsupported, fallback to Twitter intent");
+          console.log("Native share fallback to Twitter intent");
         }
       }
 
-      // Fallback: Open Twitter / X intent URL
       const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(caption)}`;
       window.open(twitterUrl, "_blank", "noopener,noreferrer");
       showToast("Opened Twitter intent!");
@@ -331,12 +346,18 @@ export default function IdGenerator() {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto flex flex-col lg:flex-row items-center lg:items-start justify-center gap-6 p-4 font-mono">
+    <div 
+      ref={containerRef}
+      className="relative w-full max-w-5xl mx-auto flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 p-4 md:p-6 font-mono stagger-2"
+      style={{
+        background: "radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 80, 39, 0.07), transparent 80%)"
+      }}
+    >
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-4 right-4 z-50 bg-[#0C1017] border border-hh-orange text-white text-xs px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-bounce">
+        <div className="fixed top-6 right-6 z-50 bg-[#0C1017] border-2 border-[#00FF88] text-white text-xs px-4 py-3 rounded-md shadow-[4px_4px_0px_#000000] flex items-center gap-2.5 animate-bounce font-mono">
           <Zap className="w-4 h-4 text-hh-yellow" />
-          <span>{toastMessage}</span>
+          <span>[ {toastMessage} ]</span>
         </div>
       )}
 
@@ -358,41 +379,45 @@ export default function IdGenerator() {
         className="hidden"
       />
 
-      {/* LEFT COLUMN: Live Canvas Preview (~55% vertical space on mobile) */}
-      <div className="w-full lg:w-1/2 flex flex-col items-center gap-3">
-        {/* Mode Switcher Tabs */}
-        <div className="w-full max-w-sm flex p-1 rounded-xl bg-hh-card border border-hh-border">
+      {/* LEFT COLUMN: Live Canvas Preview */}
+      <div className="w-full lg:w-1/2 flex flex-col items-center gap-4">
+        {/* Mode Switcher Tabs (Tactile Terminal Treatment) */}
+        <div className="w-full max-w-sm grid grid-cols-2 p-1.5 rounded-lg bg-black/60 border border-white/15">
           <button
             onClick={() => handleModeChange("single")}
-            className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+            className={`py-2 px-3 rounded text-xs font-bold transition-all flex items-center justify-center gap-2 ${
               mode === "single"
-                ? "bg-gradient-to-r from-hh-orange to-hh-pink text-white shadow-md"
-                : "text-hh-muted hover:text-white"
+                ? "tab-terminal-active"
+                : "tab-terminal hover:text-white"
             }`}
           >
             <User className="w-3.5 h-3.5" />
-            <span>SINGLE ID</span>
+            <span>[ SINGLE ID ]</span>
           </button>
           <button
             onClick={() => handleModeChange("squad")}
-            className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+            className={`py-2 px-3 rounded text-xs font-bold transition-all flex items-center justify-center gap-2 ${
               mode === "squad"
-                ? "bg-gradient-to-r from-hh-pink to-hh-purple text-white shadow-md"
-                : "text-hh-muted hover:text-white"
+                ? "tab-terminal-active"
+                : "tab-terminal hover:text-white"
             }`}
           >
             <Users className="w-3.5 h-3.5" />
-            <span>SQUAD FRAME</span>
+            <span>[ SQUAD FRAME ]</span>
           </button>
         </div>
 
-        {/* Live Canvas Box */}
-        <div className="relative w-full max-w-md aspect-[1080/1350] bg-[#05080A] rounded-2xl border-2 border-hh-orange/30 overflow-hidden shadow-2xl shadow-hh-orange/10 group touch-none select-none">
-          {/* Skeleton loading overlay */}
+        {/* Live Canvas Interactive Box with Pulsing Glow */}
+        <div className="relative w-full max-w-md aspect-[1080/1350] bg-[#05080A] rounded-xl overflow-hidden shadow-2xl animate-idle-glow group touch-none select-none">
+          {/* Terminal loader overlay */}
           {isAssetsLoading && (
-            <div className="absolute inset-0 z-20 bg-[#05080A] flex flex-col items-center justify-center gap-3 text-hh-muted">
-              <Sparkles className="w-8 h-8 text-hh-orange animate-spin" />
-              <span className="text-xs">LOADING BRAND ASSETS & FONTS...</span>
+            <div className="absolute inset-0 z-20 bg-[#05080A] flex flex-col items-center justify-center gap-3 text-hh-neon font-mono p-6">
+              <Terminal className="w-8 h-8 text-hh-orange animate-pulse" />
+              <div className="text-xs tracking-wider flex items-center gap-1">
+                <span className="text-hh-orange">root@hhgoa:~$</span>
+                <span>initializing_engine...</span>
+                <span className="animate-cursor-blink text-hh-neon">_</span>
+              </div>
             </div>
           )}
 
@@ -409,43 +434,43 @@ export default function IdGenerator() {
           />
 
           {/* Drag Overlay Hint */}
-          <div className="absolute top-3 left-3 pointer-events-none bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-[10px] text-hh-neon flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
-            <Move className="w-3 h-3" />
+          <div className="absolute top-3 left-3 pointer-events-none bg-black/80 backdrop-blur-md px-3 py-1.5 rounded border border-white/20 text-[10px] text-hh-neon flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity font-mono">
+            <Move className="w-3 h-3 text-hh-orange" />
             <span>DRAG CANVAS TO REPOSITION CROP</span>
           </div>
         </div>
       </div>
 
-      {/* RIGHT COLUMN: Form Controls & Action Buttons (~40% vertical space) */}
-      <div className="w-full lg:w-1/2 flex flex-col gap-4">
-        {/* Upload Trigger Dropzone */}
+      {/* RIGHT COLUMN: Form Controls & Action Buttons */}
+      <div className="w-full lg:w-1/2 flex flex-col gap-5">
+        {/* Upload Dropzone */}
         <div 
           onClick={() => fileInputRef.current?.click()}
-          className="w-full p-4 rounded-xl border-2 border-dashed border-hh-border hover:border-hh-orange bg-hh-card/60 hover:bg-hh-card transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group"
+          className="w-full p-4 rounded-lg border-2 border-dashed border-hh-orange/40 hover:border-hh-orange bg-black/40 hover:bg-black/70 transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group border-opacity-60"
         >
-          <div className="w-10 h-10 rounded-full bg-hh-orange/10 border border-hh-orange/30 flex items-center justify-center text-hh-orange group-hover:scale-110 transition-transform">
+          <div className="w-10 h-10 rounded-md bg-hh-orange/15 border border-hh-orange/40 flex items-center justify-center text-hh-orange group-hover:scale-110 transition-transform">
             <Camera className="w-5 h-5" />
           </div>
           <div className="text-center">
-            <p className="text-xs font-bold text-white flex items-center gap-1.5 justify-center">
+            <p className="text-xs font-bold text-white flex items-center gap-1.5 justify-center tracking-wider">
               <Upload className="w-3.5 h-3.5 text-hh-neon" />
-              <span>{photos[0]?.image ? "CHANGE PHOTO" : "UPLOAD BUILDER PHOTO"}</span>
+              <span>{photos[0]?.image ? "[ CHANGE BUILDER PHOTO ]" : "[ UPLOAD BUILDER PHOTO ]"}</span>
             </p>
-            <p className="text-[10px] text-hh-muted mt-1">
-              Supports JPG, PNG, WEBP, HEIC (iPhone capture)
+            <p className="text-[10px] text-hh-muted mt-1 font-mono">
+              Supports JPG, PNG, WEBP, HEIC (iPhone gallery / camera)
             </p>
           </div>
         </div>
 
         {/* Squad Member Selector (If Squad Mode Active) */}
         {mode === "squad" && (
-          <div className="flex flex-col gap-2 p-3 rounded-xl bg-hh-card border border-hh-border">
+          <div className="flex flex-col gap-2 p-3.5 rounded-lg bg-black/60 border border-white/15">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-hh-neon">TEAMMATES ({photos.length}/4)</span>
               {photos.length < 4 && (
                 <button
                   onClick={addSquadMember}
-                  className="text-[10px] bg-white/10 hover:bg-white/20 px-2 py-1 rounded text-white font-bold"
+                  className="text-[10px] bg-white/10 hover:bg-white/20 px-2 py-1 rounded text-white font-bold font-mono border border-white/20"
                 >
                   + ADD TEAMMATE
                 </button>
@@ -456,9 +481,9 @@ export default function IdGenerator() {
                 <div 
                   key={idx}
                   onClick={() => setActivePhotoIdx(idx)}
-                  className={`p-2 rounded-lg border text-xs flex flex-col gap-1 cursor-pointer transition-all ${
+                  className={`p-2 rounded border text-xs flex flex-col gap-1 cursor-pointer transition-all ${
                     activePhotoIdx === idx 
-                      ? "border-hh-orange bg-hh-orange/10 text-white" 
+                      ? "border-hh-orange bg-hh-orange/15 text-white" 
                       : "border-white/10 bg-black/40 text-hh-muted"
                   }`}
                 >
@@ -471,7 +496,7 @@ export default function IdGenerator() {
                     value={p.name || ""}
                     onChange={(e) => updateSquadMemberName(idx, e.target.value)}
                     placeholder={`Teammate ${idx + 1}`}
-                    className="w-full bg-black/60 border border-white/10 px-2 py-1 rounded text-[11px] text-white focus:outline-none focus:border-hh-orange"
+                    className="w-full bg-black/80 border border-white/15 px-2 py-1 rounded text-[11px] text-white focus:outline-none focus:border-hh-orange font-mono"
                   />
                 </div>
               ))}
@@ -480,12 +505,12 @@ export default function IdGenerator() {
         )}
 
         {/* Form Inputs: Name & Stack */}
-        <div className="flex flex-col gap-3 p-4 rounded-xl bg-hh-card border border-hh-border">
+        <div className="flex flex-col gap-3.5 p-4 rounded-lg bg-black/60 border border-white/15">
           {/* Name Field */}
           <div className="flex flex-col gap-1.5">
             <label className="text-[11px] font-bold text-hh-muted flex items-center justify-between">
               <span>BUILDER NAME</span>
-              <span className="text-[10px] text-hh-neon">REQUIRED</span>
+              <span className="text-[10px] text-hh-neon">[ REQUIRED ]</span>
             </label>
             <input
               type="text"
@@ -493,22 +518,22 @@ export default function IdGenerator() {
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Satapathy / Alex"
               maxLength={28}
-              className="w-full bg-hh-input border border-hh-border rounded-lg px-3 py-2.5 text-xs text-white placeholder-hh-muted focus:outline-none focus:border-hh-orange font-bold uppercase transition-colors"
+              className="w-full bg-black/80 border border-white/20 rounded px-3 py-2.5 text-xs text-white placeholder-hh-muted focus:outline-none focus:border-hh-orange font-bold uppercase transition-colors font-mono"
             />
           </div>
 
           {/* Stack / Role Field */}
           <div className="flex flex-col gap-1.5">
             <label className="text-[11px] font-bold text-hh-muted">
-              STACK / ROLE (FREE TEXT)
+              STACK / SKILLS (COMMA SEPARATED)
             </label>
             <input
               type="text"
               value={stack}
               onChange={(e) => setStack(e.target.value)}
-              placeholder="e.g. Full-stack / Rust / Solana / AI"
+              placeholder="e.g. Rust, Solana, AI, Full-stack"
               maxLength={36}
-              className="w-full bg-hh-input border border-hh-border rounded-lg px-3 py-2.5 text-xs text-white placeholder-hh-muted focus:outline-none focus:border-hh-orange transition-colors"
+              className="w-full bg-black/80 border border-white/20 rounded px-3 py-2.5 text-xs text-white placeholder-hh-muted focus:outline-none focus:border-hh-orange transition-colors font-mono"
             />
           </div>
 
@@ -516,45 +541,45 @@ export default function IdGenerator() {
           <div className="flex flex-col gap-1.5 pt-1">
             <div className="flex items-center justify-between">
               <label className="text-[11px] font-bold text-hh-yellow flex items-center gap-1">
-                <Sparkles className="w-3 h-3" />
+                <Sparkles className="w-3 h-3 text-hh-yellow" />
                 <span>BUILDER CLASS TITLE</span>
               </label>
               <button
                 type="button"
                 onClick={handleRerollTitle}
-                className="text-[10px] text-hh-muted hover:text-hh-neon flex items-center gap-1 transition-colors"
+                className="tab-terminal px-2 py-0.5 text-[10px] font-mono flex items-center gap-1 rounded hover:border-hh-orange hover:text-white"
               >
                 <RefreshCw className="w-3 h-3" />
-                <span>SHUFFLE</span>
+                <span>[ SHUFFLE ]</span>
               </button>
             </div>
-            <div className="w-full bg-black/50 border border-hh-orange/40 rounded-lg px-3 py-2 text-xs font-bold text-hh-yellow tracking-wider flex items-center justify-between">
+            <div className="w-full bg-black/80 border border-hh-orange/50 rounded px-3 py-2.5 text-xs font-bold text-hh-yellow tracking-wider flex items-center justify-between font-mono">
               <span>[ {builderTitle} ]</span>
-              <span className="text-[9px] bg-hh-orange/20 text-hh-orange px-1.5 py-0.5 rounded font-mono">INSTANT</span>
+              <span className="text-[9px] bg-hh-orange/20 text-hh-orange px-1.5 py-0.5 rounded border border-hh-orange/30">DETERMINISTIC</span>
             </div>
           </div>
         </div>
 
-        {/* Action Buttons Bar */}
+        {/* Tactile Neubrutalist Action Buttons */}
         <div className="grid grid-cols-2 gap-3 mt-1">
           {/* Download Button */}
           <button
             onClick={handleDownload}
             disabled={isAssetsLoading}
-            className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-hh-orange to-hh-pink hover:opacity-95 text-white font-bold text-xs tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-hh-orange/20 active:scale-95 transition-all disabled:opacity-50"
+            className="btn-terminal-primary py-3.5 px-4 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider disabled:opacity-50"
           >
             <Download className="w-4 h-4" />
-            <span>DOWNLOAD PNG</span>
+            <span>[ DOWNLOAD PNG ]</span>
           </button>
 
           {/* Share to X Button */}
           <button
             onClick={handleShare}
             disabled={isSharing || isAssetsLoading}
-            className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-hh-pink to-hh-purple hover:opacity-95 text-white font-bold text-xs tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-hh-purple/20 active:scale-95 transition-all disabled:opacity-50"
+            className="btn-terminal-secondary py-3.5 px-4 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider disabled:opacity-50"
           >
             <Share2 className={`w-4 h-4 ${isSharing ? "animate-spin" : ""}`} />
-            <span>{isSharing ? "UPLOADING..." : "SHARE TO X"}</span>
+            <span>{isSharing ? "[ UPLOADING... ]" : "[ SHARE TO X ]"}</span>
           </button>
         </div>
       </div>
