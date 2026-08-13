@@ -78,7 +78,7 @@ export async function ensureFontsLoaded(): Promise<boolean> {
 }
 
 /**
- * Render Layer 1: Offscreen Background & Badge Frame Artwork
+ * Render Layer 1: Offscreen Background & Retro Poster Badge Frame Artwork
  */
 export function renderLayer1Background(mode: "single" | "squad"): HTMLCanvasElement {
   // Return cached offscreen canvas if mode matches
@@ -93,139 +93,159 @@ export function renderLayer1Background(mode: "single" | "squad"): HTMLCanvasElem
   const ctx = canvas.getContext("2d");
   if (!ctx) return canvas;
 
-  // 1. Deep Dark Navy Background (#05080A)
-  ctx.fillStyle = "#05080A";
+  // 1. Warm Cream/Parchment Paper Background (#FFFBE8)
+  ctx.fillStyle = "#FFFBE8";
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-  // 2. Sun rise background texture overlay (if loaded)
-  if (brandImages.sunRise && brandImages.sunRise.complete && brandImages.sunRise.naturalWidth > 0) {
-    ctx.save();
-    ctx.globalAlpha = 0.35;
-    ctx.drawImage(brandImages.sunRise, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    ctx.restore();
-  } else {
-    // Fallback Sunrise Gradient Accent
-    const grad = ctx.createLinearGradient(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    grad.addColorStop(0, "rgba(255, 80, 39, 0.2)");
-    grad.addColorStop(0.5, "rgba(231, 29, 115, 0.15)");
-    grad.addColorStop(1, "rgba(112, 0, 255, 0.2)");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  // Subtle Parchment Texture Lines
+  ctx.strokeStyle = "rgba(11, 104, 57, 0.05)";
+  ctx.lineWidth = 1;
+  for (let y = 0; y < CANVAS_HEIGHT; y += 24) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(CANVAS_WIDTH, y); ctx.stroke();
   }
 
-  // 3. Palm tree silhouette motif overlay (bottom background accent)
+  // 2. Palm Tree Vector Silhouette Motif (Bottom Ambient Accent)
   if (brandImages.footerTrees && brandImages.footerTrees.complete && brandImages.footerTrees.naturalWidth > 0) {
     ctx.save();
-    ctx.globalAlpha = 0.25;
-    const treeH = 360;
+    ctx.globalAlpha = 0.12;
+    const treeH = 340;
     ctx.drawImage(brandImages.footerTrees, 0, CANVAS_HEIGHT - treeH, CANVAS_WIDTH, treeH);
     ctx.restore();
   }
 
-  // 4. Subtle Outer Dashed Cut-Line & Tech Border
-  ctx.save();
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
-  ctx.lineWidth = 2;
-  ctx.setLineDash([8, 8]);
+  // 3. RETRO POSTER BORDERS (Dark Forest Green #0B6839 + Hot Pink #FF3B77 Accents)
+  // Outer Thick Forest Green Border
+  ctx.strokeStyle = "#0B6839";
+  ctx.lineWidth = 8;
   ctx.strokeRect(20, 20, CANVAS_WIDTH - 40, CANVAS_HEIGHT - 40);
-  ctx.restore();
 
-  // Outer Tech Corner Align Markers (+)
-  const drawCornerTick = (cx: number, cy: number) => {
-    ctx.strokeStyle = "#FF5027";
-    ctx.lineWidth = 3;
+  // Inner Thin Forest Green Border with offset gap
+  ctx.lineWidth = 3;
+  ctx.strokeRect(32, 32, CANVAS_WIDTH - 64, CANVAS_HEIGHT - 64);
+
+  // Corner Postage-Stamp Cutout Accents
+  const drawStampCorner = (cx: number, cy: number) => {
+    ctx.save();
+    ctx.fillStyle = "#FF3B77";
     ctx.beginPath();
-    ctx.moveTo(cx - 16, cy); ctx.lineTo(cx + 16, cy);
-    ctx.moveTo(cx, cy - 16); ctx.lineTo(cx, cy + 16);
+    ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#0B6839";
+    ctx.lineWidth = 2;
     ctx.stroke();
+    ctx.restore();
   };
-  drawCornerTick(36, 36);
-  drawCornerTick(CANVAS_WIDTH - 36, 36);
-  drawCornerTick(36, CANVAS_HEIGHT - 36);
-  drawCornerTick(CANVAS_WIDTH - 36, CANVAS_HEIGHT - 36);
+  drawStampCorner(32, 32);
+  drawStampCorner(CANVAS_WIDTH - 32, 32);
+  drawStampCorner(32, CANVAS_HEIGHT - 32);
+  drawStampCorner(CANVAS_WIDTH - 32, CANVAS_HEIGHT - 32);
 
-  // 5. TOP BAND (0 to 124px)
-  const headerGrad = ctx.createLinearGradient(0, 0, CANVAS_WIDTH, 0);
-  headerGrad.addColorStop(0, "rgba(255, 80, 39, 0.18)");
-  headerGrad.addColorStop(0.5, "rgba(231, 29, 115, 0.18)");
-  headerGrad.addColorStop(1, "rgba(112, 0, 255, 0.18)");
-  ctx.fillStyle = headerGrad;
-  ctx.fillRect(36, 36, CANVAS_WIDTH - 72, 88);
+  // 4. TOP HEADLINE BANNER SECTION (Y: 48px to 160px)
+  // Top Banner Background Bar (Dark Forest Green Fill)
+  ctx.fillStyle = "#0B6839";
+  ctx.fillRect(48, 48, CANVAS_WIDTH - 96, 96);
 
-  ctx.strokeStyle = "rgba(255, 80, 39, 0.4)";
-  ctx.lineWidth = 1;
-  ctx.strokeRect(36, 36, CANVAS_WIDTH - 72, 88);
+  ctx.strokeStyle = "#074726";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(48, 48, CANVAS_WIDTH - 96, 96);
 
-  // Top Band Logos
+  // "HACKER HOUSE GOA" Main Headline Wordmark
   if (brandImages.hackerHouse && brandImages.hackerHouse.complete && brandImages.hackerHouse.naturalWidth > 0) {
-    const hhW = 280;
+    const hhW = 320;
     const hhH = (brandImages.hackerHouse.naturalHeight / brandImages.hackerHouse.naturalWidth) * hhW;
-    ctx.drawImage(brandImages.hackerHouse, 56, 80 - hhH / 2, hhW, hhH);
+    ctx.drawImage(brandImages.hackerHouse, 68, 96 - hhH / 2, hhW, hhH);
   } else {
-    ctx.fillStyle = "#FFFFFF";
-    ctx.font = "bold 32px Syne, sans-serif";
-    ctx.fillText("HACKER HOUSE", 56, 90);
+    ctx.fillStyle = "#FFFBE8";
+    ctx.font = "bold 36px Syne, sans-serif";
+    ctx.fillText("HACKER HOUSE GOA", 68, 108);
   }
 
-  // Event Date & Location Stamped Badge (Center-Right)
-  ctx.fillStyle = "rgba(254, 225, 1, 0.12)";
-  ctx.strokeStyle = "#FEE101";
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.roundRect(CANVAS_WIDTH - 440, 56, 384, 48, 24);
-  ctx.fill();
-  ctx.stroke();
+  // Official Pink "गोवा" Devanagari Logo Accent (Top Right Header)
+  if (brandImages.goaHindi && brandImages.goaHindi.complete && brandImages.goaHindi.naturalWidth > 0) {
+    const ghW = 110;
+    const ghH = (brandImages.goaHindi.naturalHeight / brandImages.goaHindi.naturalWidth) * ghW;
+    ctx.drawImage(brandImages.goaHindi, CANVAS_WIDTH - 430, 96 - ghH / 2, ghW, ghH);
+  }
 
-  ctx.fillStyle = "#FEE101";
-  ctx.font = "bold 15px 'JetBrains Mono', monospace";
-  ctx.textAlign = "center";
-  ctx.fillText("GOA, INDIA · 28-31 OCT 2026", CANVAS_WIDTH - 248, 85);
-  ctx.textAlign = "left";
-
-  // 6. REBALANCED PHOTO BOUNDING CONTAINER (Y: 136, H: 500px ~37% of card height)
-  const photoX = 48;
-  const photoY = 136;
-  const photoW = CANVAS_WIDTH - 96;
-  const photoH = 500;
-
-  // Photo Area Distinct Well Border & Tech Ticks
-  ctx.strokeStyle = "rgba(255, 80, 39, 0.6)";
+  // Event Dates Pill Stamp Badge (Top Far Right)
+  ctx.fillStyle = "#FF3B77";
+  ctx.strokeStyle = "#0B6839";
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.roundRect(photoX, photoY, photoW, photoH, 12);
+  ctx.roundRect(CANVAS_WIDTH - 300, 64, 232, 64, 8);
+  ctx.fill();
   ctx.stroke();
 
-  // Photo corner glow markers
-  ctx.fillStyle = "#FF5027";
-  ctx.fillRect(photoX - 3, photoY - 3, 10, 10);
-  ctx.fillRect(photoX + photoW - 7, photoY - 3, 10, 10);
-  ctx.fillRect(photoX - 3, photoY + photoH - 7, 10, 10);
-  ctx.fillRect(photoX + photoW - 7, photoY + photoH - 7, 10, 10);
+  ctx.fillStyle = "#FFFBE8";
+  ctx.font = "bold 13px 'JetBrains Mono', monospace";
+  ctx.textAlign = "center";
+  ctx.fillText("OCT 28 - 31, 2026", CANVAS_WIDTH - 184, 92);
+  ctx.fillStyle = "#FEE101";
+  ctx.font = "bold 11px 'JetBrains Mono', monospace";
+  ctx.fillText("GOA, INDIA", CANVAS_WIDTH - 184, 112);
+  ctx.textAlign = "left";
 
-  // 7. FREED SUPPORTING CONTENT AREA (Y: 650px to 1320px)
-  const bottomY = 650;
+  // 5. PHOTO WELL FRAMEWORK (Single Circle vs Squad Grid)
+  if (mode === "single") {
+    // CIRCULAR PHOTO FRAMEWORK (Center: 540, 420, Radius: 230)
+    const cx = 540;
+    const cy = 410;
+    const radius = 220;
+
+    // Outer Hot Pink Dashed Ring
+    ctx.save();
+    ctx.strokeStyle = "#FF3B77";
+    ctx.lineWidth = 5;
+    ctx.setLineDash([14, 10]);
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius + 12, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // Inner Dark Forest Green Solid Ring
+    ctx.strokeStyle = "#0B6839";
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius + 4, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Corner Decorative Sparkle / Sun Vector Accents around Circle
+    const drawSparkle = (sx: number, sy: number) => {
+      ctx.fillStyle = "#FEE101";
+      ctx.strokeStyle = "#0B6839";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(sx, sy, 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    };
+    drawSparkle(cx - radius - 16, cy - radius / 2);
+    drawSparkle(cx + radius + 16, cy - radius / 2);
+    drawSparkle(cx - radius - 16, cy + radius / 2);
+    drawSparkle(cx + radius + 16, cy + radius / 2);
+
+  } else {
+    // SQUAD GRID FRAME (Y: 170 to 650)
+    const photoX = 48;
+    const photoY = 170;
+    const photoW = CANVAS_WIDTH - 96;
+    const photoH = 480;
+
+    ctx.strokeStyle = "#0B6839";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(photoX, photoY, photoW, photoH);
+  }
+
+  // 6. FREED LOWER CARD AREA BACKGROUND PANEL (Y: 660 to 1310)
+  const bottomY = 660;
   const bottomH = CANVAS_HEIGHT - bottomY - 36;
   
-  // Dark card background panel for supporting content
-  ctx.fillStyle = "rgba(12, 16, 23, 0.95)";
-  ctx.beginPath();
-  ctx.roundRect(48, bottomY, photoW, bottomH, 12);
-  ctx.fill();
+  ctx.fillStyle = "#F7F1E1";
+  ctx.fillRect(48, bottomY, CANVAS_WIDTH - 96, bottomH);
 
-  // Top accent border gradient stroke
-  const bGrad = ctx.createLinearGradient(48, 0, photoW, 0);
-  bGrad.addColorStop(0, "#FF5027");
-  bGrad.addColorStop(0.5, "#E71D73");
-  bGrad.addColorStop(1, "#7000FF");
-  ctx.fillStyle = bGrad;
-  ctx.fillRect(48, bottomY, photoW, 4);
-
-  // Outer border for content area
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.roundRect(48, bottomY, photoW, bottomH, 12);
-  ctx.stroke();
+  ctx.strokeStyle = "#0B6839";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(48, bottomY, CANVAS_WIDTH - 96, bottomH);
 
   cachedLayer1Canvas = canvas;
   return canvas;
@@ -238,48 +258,64 @@ export function drawPhotoLayer(
   ctx: CanvasRenderingContext2D,
   cardData: CardData
 ) {
-  const photoX = 48;
-  const photoY = 136;
-  const photoW = CANVAS_WIDTH - 96;
-  const photoH = 500; // Rebalanced photo height (~37%)
-
-  ctx.save();
-  // Clip to Photo Bounding Box (rounded rect)
-  ctx.beginPath();
-  ctx.roundRect(photoX, photoY, photoW, photoH, 12);
-  ctx.clip();
-
   if (cardData.mode === "single") {
+    // CIRCULAR PHOTO CLIP
+    const cx = 540;
+    const cy = 410;
+    const radius = 220;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.clip();
+
     const photoState = cardData.photos[0];
     if (photoState && photoState.image) {
-      drawSinglePhoto(ctx, photoState.image, photoX, photoY, photoW, photoH, photoState.cropX, photoState.cropY, photoState.scale || 1);
+      drawSinglePhoto(
+        ctx, 
+        photoState.image, 
+        cx - radius, 
+        cy - radius, 
+        radius * 2, 
+        radius * 2, 
+        photoState.cropX, 
+        photoState.cropY, 
+        photoState.scale || 1
+      );
     } else {
-      drawPlaceholderPhoto(ctx, photoX, photoY, photoW, photoH, "UPLOAD BUILDER PHOTO");
+      drawPlaceholderPhoto(ctx, cx - radius, cy - radius, radius * 2, radius * 2, "UPLOAD BUILDER PHOTO");
     }
+
+    // Inner Vintage Vignette Gradient
+    const grad = ctx.createRadialGradient(cx, cy, radius * 0.4, cx, cy, radius);
+    grad.addColorStop(0, "rgba(255, 251, 232, 0)");
+    grad.addColorStop(1, "rgba(11, 104, 57, 0.25)");
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
   } else {
-    // Squad Mode: 2-4 photos laid out in squad grid frame
+    // SQUAD GRID LAYOUT (Y: 170 to 650)
+    const photoX = 48;
+    const photoY = 170;
+    const photoW = CANVAS_WIDTH - 96;
+    const photoH = 480;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(photoX, photoY, photoW, photoH);
+    ctx.clip();
+
     drawSquadPhotos(ctx, cardData.photos, photoX, photoY, photoW, photoH);
+
+    ctx.restore();
   }
-
-  // Inner Shadow / Vignette for photo well
-  const grad = ctx.createRadialGradient(
-    photoX + photoW / 2,
-    photoY + photoH / 2,
-    photoW * 0.3,
-    photoX + photoW / 2,
-    photoY + photoH / 2,
-    photoW * 0.7
-  );
-  grad.addColorStop(0, "rgba(5, 8, 10, 0)");
-  grad.addColorStop(1, "rgba(5, 8, 10, 0.45)");
-  ctx.fillStyle = grad;
-  ctx.fillRect(photoX, photoY, photoW, photoH);
-
-  ctx.restore();
 }
 
 /**
- * Cover Crop math + position translation for a single photo
+ * Cover Crop math + position translation for a photo
  */
 function drawSinglePhoto(
   ctx: CanvasRenderingContext2D,
@@ -330,7 +366,7 @@ function drawSquadPhotos(
 ) {
   const count = Math.min(Math.max(photos.length, 2), 4);
 
-  ctx.fillStyle = "#0A0E14";
+  ctx.fillStyle = "#FFFBE8";
   ctx.fillRect(x, y, w, h);
 
   let grid: { x: number; y: number; w: number; h: number; name: string }[] = [];
@@ -365,14 +401,15 @@ function drawSquadPhotos(
       drawPlaceholderPhoto(ctx, cell.x, cell.y, cell.w, cell.h, `TEAMMATE ${idx + 1}`);
     }
 
-    ctx.strokeStyle = "rgba(255, 80, 39, 0.5)";
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#0B6839";
+    ctx.lineWidth = 3;
     ctx.strokeRect(cell.x, cell.y, cell.w, cell.h);
 
-    ctx.fillStyle = "rgba(5, 8, 10, 0.85)";
+    // Teammate Tag Banner
+    ctx.fillStyle = "#FF3B77";
     ctx.fillRect(cell.x, cell.y + cell.h - 32, cell.w, 32);
 
-    ctx.fillStyle = "#00FF88";
+    ctx.fillStyle = "#FFFBE8";
     ctx.font = "bold 13px 'JetBrains Mono', monospace";
     ctx.textAlign = "center";
     ctx.fillText(cell.name.toUpperCase(), cell.x + cell.w / 2, cell.y + cell.h - 11);
@@ -393,166 +430,179 @@ function drawPlaceholderPhoto(
   h: number,
   label: string
 ) {
-  ctx.fillStyle = "#0B0F17";
+  ctx.fillStyle = "#F4EFE2";
   ctx.fillRect(x, y, w, h);
 
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.04)";
+  ctx.strokeStyle = "rgba(11, 104, 57, 0.1)";
   ctx.lineWidth = 1;
-  for (let gx = x; gx < x + w; gx += 40) {
+  for (let gx = x; gx < x + w; gx += 32) {
     ctx.beginPath(); ctx.moveTo(gx, y); ctx.lineTo(gx, y + h); ctx.stroke();
   }
-  for (let gy = y; gy < y + h; gy += 40) {
+  for (let gy = y; gy < y + h; gy += 32) {
     ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x + w, gy); ctx.stroke();
   }
 
   const cx = x + w / 2;
-  const cy = y + h / 2 - 15;
-  const radius = 50;
+  const cy = y + h / 2 - 12;
+  const radius = 46;
 
-  const grad = ctx.createLinearGradient(cx - radius, cy - radius, cx + radius, cy + radius);
-  grad.addColorStop(0, "rgba(255, 80, 39, 0.3)");
-  grad.addColorStop(1, "rgba(231, 29, 115, 0.3)");
-  ctx.fillStyle = grad;
+  ctx.fillStyle = "#FF3B77";
   ctx.beginPath();
   ctx.arc(cx, cy, radius, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.strokeStyle = "#FF5027";
-  ctx.lineWidth = 2;
+  ctx.strokeStyle = "#0B6839";
+  ctx.lineWidth = 3;
   ctx.stroke();
 
-  ctx.fillStyle = "#FFFFFF";
+  ctx.fillStyle = "#0B6839";
   ctx.font = "bold 18px 'JetBrains Mono', monospace";
   ctx.textAlign = "center";
   ctx.fillText(label, cx, cy + radius + 32);
   
-  ctx.fillStyle = "#8A99AD";
-  ctx.font = "14px 'JetBrains Mono', monospace";
+  ctx.fillStyle = "#FF3B77";
+  ctx.font = "bold 13px 'JetBrains Mono', monospace";
   ctx.fillText("TAP OR DRAG PHOTO HERE", cx, cy + radius + 54);
   ctx.textAlign = "left";
 }
 
 /**
- * Draw Decorative Barcode Strip
+ * Draw High-Resolution Retro Barcode Pattern
  */
-function drawBarcodeStrip(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, codeText: string) {
-  ctx.fillStyle = "#FFFFFF";
+function drawRetroBarcode(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, codeText: string) {
+  ctx.fillStyle = "#FFFBE8";
   ctx.fillRect(x, y, w, h);
 
-  // Generate pseudo-random barcode lines
-  const barCount = 38;
-  const step = w / barCount;
-  ctx.fillStyle = "#000000";
+  ctx.strokeStyle = "#0B6839";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x, y, w, h);
+
+  const barCount = 36;
+  const step = (w - 16) / barCount;
+  ctx.fillStyle = "#0B6839";
 
   for (let i = 0; i < barCount; i++) {
-    // Deterministic width based on index hash
     const widthMultiplier = (i % 3 === 0 || i % 7 === 0) ? 2 : 1;
-    const barX = x + i * step;
+    const barX = x + 8 + i * step;
     if (i % 2 === 0) {
-      ctx.fillRect(barX, y + 4, step * widthMultiplier * 0.7, h - 20);
+      ctx.fillRect(barX, y + 6, step * widthMultiplier * 0.65, h - 22);
     }
   }
 
-  // Barcode text label underneath
-  ctx.fillStyle = "#000000";
-  ctx.font = "bold 11px 'JetBrains Mono', monospace";
+  ctx.fillStyle = "#0B6839";
+  ctx.font = "bold 10px 'JetBrains Mono', monospace";
   ctx.textAlign = "center";
-  ctx.fillText(`* ${codeText} *`, x + w / 2, y + h - 4);
+  ctx.fillText(`* ${codeText} *`, x + w / 2, y + h - 5);
   ctx.textAlign = "left";
 }
 
 /**
- * Render Layer 3: Text & Rich Credential Metadata Layer
+ * Render Layer 3: Text & Retro Travel Poster Metadata Layer
  */
 export function drawTextLayer(
   ctx: CanvasRenderingContext2D,
   cardData: CardData
 ) {
-  const startY = 670;
+  const startY = 680;
 
-  // 1. BUILDER NAME (Large Display Font)
+  // 1. ILLUSTRATED HOT PINK NAME RIBBON BANNER (Y: 680 to 760)
   const nameText = (cardData.name || "BUILDER NAME").toUpperCase();
-  ctx.font = "900 52px Syne, sans-serif";
-  
-  let fontSize = 52;
+  const bannerY = startY;
+  const bannerH = 72;
+
+  // Banner Hot Pink Fill & Dark Green Border
+  ctx.fillStyle = "#FF3B77";
+  ctx.fillRect(64, bannerY, CANVAS_WIDTH - 128, bannerH);
+
+  ctx.strokeStyle = "#0B6839";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(64, bannerY, CANVAS_WIDTH - 128, bannerH);
+
+  // Swallowtail Banner Ribbons at Sides
+  ctx.fillStyle = "#E82561";
+  ctx.beginPath();
+  ctx.moveTo(48, bannerY + 12);
+  ctx.lineTo(64, bannerY);
+  ctx.lineTo(64, bannerY + bannerH);
+  ctx.lineTo(48, bannerY + bannerH - 12);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(CANVAS_WIDTH - 48, bannerY + 12);
+  ctx.lineTo(CANVAS_WIDTH - 64, bannerY);
+  ctx.lineTo(CANVAS_WIDTH - 64, bannerY + bannerH);
+  ctx.lineTo(CANVAS_WIDTH - 48, bannerY + bannerH - 12);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Builder Name Text (Cream Display Typography)
+  ctx.font = "900 48px Syne, sans-serif";
+  let fontSize = 48;
   let textWidth = ctx.measureText(nameText).width;
-  while (textWidth > 580 && fontSize > 28) {
+  while (textWidth > 820 && fontSize > 24) {
     fontSize -= 2;
     ctx.font = `900 ${fontSize}px Syne, sans-serif`;
     textWidth = ctx.measureText(nameText).width;
   }
 
-  ctx.fillStyle = "#FFFFFF";
-  ctx.fillText(nameText, 76, startY + 48);
+  ctx.fillStyle = "#FFFBE8";
+  ctx.textAlign = "center";
+  ctx.fillText(nameText, CANVAS_WIDTH / 2, bannerY + 52);
+  ctx.textAlign = "left";
 
-  // Stamped Official Issue Date Badge Box (Top Right of freed content area)
-  ctx.save();
-  ctx.fillStyle = "rgba(231, 29, 115, 0.12)";
-  ctx.strokeStyle = "#E71D73";
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.roundRect(CANVAS_WIDTH - 380, startY, 304, 52, 6);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = "#E71D73";
-  ctx.font = "bold 11px 'JetBrains Mono', monospace";
-  ctx.fillText("OFFICIAL EVENT CREDENTIAL", CANVAS_WIDTH - 364, startY + 22);
-  ctx.fillStyle = "#FFFFFF";
-  ctx.font = "bold 12px 'JetBrains Mono', monospace";
-  ctx.fillText("ISSUE DATE: 28 OCT 2026", CANVAS_WIDTH - 364, startY + 40);
-  ctx.restore();
-
-  // 2. BUILDER CLASS TITLE BADGE (Pill Box Container with Gradient Stroke)
+  // 2. BUILDER CLASS TITLE (Postage-Stamp Pill Box Container with Gold Border)
   const titleText = `[ ${cardData.builderTitle || "SHIP-OR-DIE ENGINEER"} ]`;
-  ctx.font = "bold 22px 'JetBrains Mono', monospace";
-  const titleW = ctx.measureText(titleText).width + 36;
-  const titleY = startY + 84;
+  const titleY = bannerY + 92;
 
-  // Pill Box Container
-  ctx.fillStyle = "#0C1017";
-  ctx.strokeStyle = "#FF5027";
-  ctx.lineWidth = 2;
+  ctx.font = "bold 22px 'JetBrains Mono', monospace";
+  const titleW = Math.min(ctx.measureText(titleText).width + 40, 920);
+
+  ctx.fillStyle = "#0B6839";
+  ctx.strokeStyle = "#FEE101";
+  ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.roundRect(76, titleY, Math.min(titleW, 928), 44, 8);
+  ctx.roundRect((CANVAS_WIDTH - titleW) / 2, titleY, titleW, 46, 8);
   ctx.fill();
   ctx.stroke();
 
-  // Title Text (Gradient Accent Fill)
-  const titleGrad = ctx.createLinearGradient(94, 0, 94 + titleW, 0);
-  titleGrad.addColorStop(0, "#FF5027");
-  titleGrad.addColorStop(0.5, "#E71D73");
-  titleGrad.addColorStop(1, "#FEE101");
-  ctx.fillStyle = titleGrad;
-  ctx.fillText(titleText, 94, titleY + 30);
+  ctx.fillStyle = "#FEE101";
+  ctx.textAlign = "center";
+  ctx.fillText(titleText, CANVAS_WIDTH / 2, titleY + 31);
+  ctx.textAlign = "left";
 
-  // 3. BUILDER ID & DECORATIVE BARCODE SECTION
+  // 3. BUILDER SERIAL ID & RETRO BARCODE SECTION (Y: 890 to 1010)
   const serialId = cardData.nodeId || `HHG26-${Math.floor(1000 + Math.random() * 9000)}`;
-  const idSectionY = titleY + 68;
+  const idSectionY = titleY + 70;
 
   // Left: Monospace Serial ID & Status
-  ctx.fillStyle = "#00FF88";
-  ctx.font = "bold 18px 'JetBrains Mono', monospace";
+  ctx.fillStyle = "#0B6839";
+  ctx.font = "bold 20px 'JetBrains Mono', monospace";
   ctx.fillText(`BUILDER ID: ${serialId}`, 76, idSectionY + 24);
 
-  ctx.fillStyle = "#8A99AD";
-  ctx.font = "14px 'JetBrains Mono', monospace";
-  ctx.fillText("STATUS: VERIFIED BUILDER · ACCESS: ALL STAGES", 76, idSectionY + 52);
+  ctx.fillStyle = "#FF3B77";
+  ctx.font = "bold 13px 'JetBrains Mono', monospace";
+  ctx.fillText("OFFICIAL RESIDENCY CREDENTIAL · ALL STAGES ACCESS", 76, idSectionY + 52);
 
-  // Right: Decorative Barcode Pattern Strip
-  drawBarcodeStrip(ctx, CANVAS_WIDTH - 360, idSectionY, 284, 60, serialId);
+  // Right: Retro Barcode
+  drawRetroBarcode(ctx, CANVAS_WIDTH - 350, idSectionY, 274, 60, serialId);
 
-  // Separator Line
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
-  ctx.lineWidth = 1;
+  // Separator Dashed Line
+  ctx.save();
+  ctx.strokeStyle = "#0B6839";
+  ctx.lineWidth = 2;
+  ctx.setLineDash([8, 6]);
   ctx.beginPath();
   ctx.moveTo(76, idSectionY + 76);
   ctx.lineTo(CANVAS_WIDTH - 76, idSectionY + 76);
   ctx.stroke();
+  ctx.restore();
 
-  // 4. STACK / SKILL BADGES TAG LIST
+  // 4. STACK / SKILL TAG BADGES LIST (Y: 1040 to 1130)
   const stackY = idSectionY + 96;
-  ctx.fillStyle = "#8A99AD";
+  ctx.fillStyle = "#0B6839";
   ctx.font = "bold 12px 'JetBrains Mono', monospace";
   ctx.fillText("TECHNICAL STACK & SKILLS:", 76, stackY);
 
@@ -567,54 +617,70 @@ export function drawTextLayer(
     const tagText = `[ ${tag} ]`;
     const tagWidth = ctx.measureText(tagText).width + 16;
 
-    if (currentTagX + tagWidth < CANVAS_WIDTH - 76) {
-      // Tag Pill Box
-      ctx.fillStyle = "rgba(0, 255, 136, 0.08)";
-      ctx.strokeStyle = "rgba(0, 255, 136, 0.4)";
-      ctx.lineWidth = 1;
+    if (currentTagX + tagWidth < CANVAS_WIDTH - 240) {
+      ctx.fillStyle = "#FFFBE8";
+      ctx.strokeStyle = "#0B6839";
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.roundRect(currentTagX, tagPillY, tagWidth, 32, 6);
+      ctx.roundRect(currentTagX, tagPillY, tagWidth, 34, 6);
       ctx.fill();
       ctx.stroke();
 
-      ctx.fillStyle = "#00FF88";
-      ctx.fillText(tagText, currentTagX + 8, tagPillY + 21);
+      ctx.fillStyle = "#0B6839";
+      ctx.fillText(tagText, currentTagX + 8, tagPillY + 22);
 
       currentTagX += tagWidth + 12;
     }
   });
 
-  // 5. DEVFOLIO / HH GOA OFFICIAL RESIDENCY FOOTER STAMP
-  const footerY = tagPillY + 58;
-
-  ctx.fillStyle = "rgba(254, 225, 1, 0.1)";
-  ctx.strokeStyle = "#FEE101";
-  ctx.lineWidth = 1.5;
+  // #FRAMEINGOA POSTAGE STAMP BADGE (Bottom Right Tag)
+  const stampX = CANVAS_WIDTH - 220;
+  const stampY = tagPillY - 10;
+  ctx.fillStyle = "#FF3B77";
+  ctx.strokeStyle = "#0B6839";
+  ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.roundRect(76, footerY, 340, 36, 6);
+  ctx.roundRect(stampX, stampY, 144, 48, 6);
   ctx.fill();
   ctx.stroke();
 
+  ctx.fillStyle = "#FFFBE8";
+  ctx.font = "bold 12px 'JetBrains Mono', monospace";
+  ctx.textAlign = "center";
+  ctx.fillText("#FRAMEINGOA", stampX + 72, stampY + 22);
   ctx.fillStyle = "#FEE101";
+  ctx.font = "bold 10px 'JetBrains Mono', monospace";
+  ctx.fillText("247 BUILDERS", stampX + 72, stampY + 38);
+  ctx.textAlign = "left";
+
+  // 5. FOOTER RESIDENCY STAMP & BRAND ACCENTS (Y: 1180 to 1300)
+  const footerY = tagPillY + 68;
+
+  // Devfolio Gold Residency Badge
+  ctx.fillStyle = "#FEE101";
+  ctx.strokeStyle = "#0B6839";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(76, footerY, 360, 38, 6);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = "#0B6839";
   ctx.font = "bold 13px 'JetBrains Mono', monospace";
-  ctx.fillText("⚡ 247 ELITE BUILDERS · RESIDENCY", 92, footerY + 23);
+  ctx.fillText("⚡ 247 ELITE BUILDERS · RESIDENCY", 92, footerY + 24);
 
   // 2:47PM Studio and Goa Hindi accents at bottom corners
   if (brandImages.goaHindi && brandImages.goaHindi.complete && brandImages.goaHindi.naturalWidth > 0) {
     const ghW = 120;
     const ghH = (brandImages.goaHindi.naturalHeight / brandImages.goaHindi.naturalWidth) * ghW;
-    ctx.drawImage(brandImages.goaHindi, CANVAS_WIDTH - 190, footerY - 10, ghW, ghH);
+    ctx.drawImage(brandImages.goaHindi, CANVAS_WIDTH - 190, footerY - 12, ghW, ghH);
   }
 
   if (brandImages.studio247 && brandImages.studio247.complete && brandImages.studio247.naturalWidth > 0) {
     const stW = 100;
     const stH = (brandImages.studio247.naturalHeight / brandImages.studio247.naturalWidth) * stW;
-    ctx.drawImage(brandImages.studio247, CANVAS_WIDTH - 170, footerY + footerHOffset(), stW, stH);
+    ctx.drawImage(brandImages.studio247, CANVAS_WIDTH - 170, footerY + 20, stW, stH);
   }
-}
-
-function footerHOffset(): number {
-  return 20;
 }
 
 /**
