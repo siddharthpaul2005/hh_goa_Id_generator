@@ -13,7 +13,10 @@ import {
   Camera, 
   Check, 
   Zap,
-  Stamp
+  Stamp,
+  Sun,
+  Moon,
+  ShieldAlert
 } from "lucide-react";
 import { 
   CardData, 
@@ -30,7 +33,9 @@ import { convertHeicToJpeg } from "@/lib/heic-converter";
 export default function IdGenerator() {
   // State
   const [mode, setMode] = useState<"single" | "squad">("single");
+  const [cardTheme, setCardTheme] = useState<"light" | "dark">("light");
   const [name, setName] = useState("");
+  const [teamName, setTeamName] = useState("");
   const [stack, setStack] = useState("");
   const [builderTitle, setBuilderTitle] = useState("SHIP-OR-DIE ENGINEER");
   const [titleOverridden, setTitleOverridden] = useState(false);
@@ -93,8 +98,10 @@ export default function IdGenerator() {
     rafIdRef.current = requestAnimationFrame(() => {
       const cardData: CardData = {
         mode,
+        cardTheme,
         photos,
         name,
+        teamName,
         stack,
         builderTitle,
         nodeId: `HHG26-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -107,13 +114,13 @@ export default function IdGenerator() {
         compositeFullCard(exportCanvasRef.current, cardData);
       }
     });
-  }, [mode, photos, name, stack, builderTitle]);
+  }, [mode, cardTheme, photos, name, teamName, stack, builderTitle]);
 
   useEffect(() => {
     if (!isAssetsLoading) {
       triggerRedraw();
     }
-  }, [isAssetsLoading, mode, photos, name, stack, builderTitle, triggerRedraw]);
+  }, [isAssetsLoading, mode, cardTheme, photos, name, teamName, stack, builderTitle, triggerRedraw]);
 
   // 5. Image File Handler (with HEIC support + off-main-thread createImageBitmap)
   const processImageFile = async (file: File, targetIdx: number) => {
@@ -139,7 +146,7 @@ export default function IdGenerator() {
         return next;
       });
 
-      showToast("Photo updated! Drag canvas to adjust crop.");
+      showToast("Photo updated! Drag canvas below to adjust crop.");
     } catch (err) {
       console.error("Failed to process image:", err);
       showToast("Failed to process photo. Try a JPEG/PNG.");
@@ -324,7 +331,7 @@ export default function IdGenerator() {
     <div className="w-full max-w-5xl mx-auto flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 p-3 md:p-6 font-mono stagger-2">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-6 right-6 z-50 bg-[#FFFBE8] border-2 border-[#0B6839] text-[#0B6839] text-xs px-4 py-3 rounded shadow-[4px_4px_0px_#0B6839] flex items-center gap-2.5 animate-bounce font-mono">
+        <div className="fixed top-6 right-6 z-50 bg-[#FFFBE8] border-2 border-[#0B6839] text-[#0B6839] text-xs px-4 py-3 rounded shadow-[4px_4px_0px_#0B6839] flex items-center gap-2.5 animate-bounce font-mono font-bold">
           <Zap className="w-4 h-4 text-[#FF3B77]" />
           <span>[ {toastMessage} ]</span>
         </div>
@@ -349,41 +356,79 @@ export default function IdGenerator() {
       />
 
       {/* LEFT COLUMN: Live Canvas Preview */}
-      <div className="w-full lg:w-1/2 flex flex-col items-center gap-4">
-        {/* Mode Switcher Tabs */}
-        <div className="w-full max-w-sm grid grid-cols-2 p-1.5 rounded-lg bg-[#F4EFE2] border-2 border-[#0B6839]">
-          <button
-            onClick={() => handleModeChange("single")}
-            className={`py-2 px-3 rounded text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-              mode === "single"
-                ? "tab-poster-active"
-                : "tab-poster hover:bg-white"
-            }`}
-          >
-            <User className="w-3.5 h-3.5" />
-            <span>[ SINGLE ID ]</span>
-          </button>
-          <button
-            onClick={() => handleModeChange("squad")}
-            className={`py-2 px-3 rounded text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-              mode === "squad"
-                ? "tab-poster-active"
-                : "tab-poster hover:bg-white"
-            }`}
-          >
-            <Users className="w-3.5 h-3.5" />
-            <span>[ SQUAD FRAME ]</span>
-          </button>
+      <div className="w-full lg:w-1/2 flex flex-col items-center gap-3">
+        {/* Toggles Bar: Mode Selector & Card Theme Switcher */}
+        <div className="w-full max-w-md flex flex-col sm:flex-row gap-2">
+          {/* Mode Switcher Tabs */}
+          <div className="flex-1 grid grid-cols-2 p-1 rounded bg-[#F4EFE2] border-2 border-[#0B6839]">
+            <button
+              onClick={() => handleModeChange("single")}
+              className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 ${
+                mode === "single"
+                  ? "tab-poster-active"
+                  : "tab-poster hover:bg-white"
+              }`}
+            >
+              <User className="w-3.5 h-3.5" />
+              <span>SINGLE ID</span>
+            </button>
+            <button
+              onClick={() => handleModeChange("squad")}
+              className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 ${
+                mode === "squad"
+                  ? "tab-poster-active"
+                  : "tab-poster hover:bg-white"
+              }`}
+            >
+              <Users className="w-3.5 h-3.5" />
+              <span>SQUAD FRAME</span>
+            </button>
+          </div>
+
+          {/* Card Theme Toggle Switch (LIGHT / DARK CARD) */}
+          <div className="grid grid-cols-2 p-1 rounded bg-[#F4EFE2] border-2 border-[#0B6839]">
+            <button
+              onClick={() => setCardTheme("light")}
+              className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1 ${
+                cardTheme === "light"
+                  ? "bg-[#0B6839] text-[#FFFBE8] shadow-[2px_2px_0px_#074726]"
+                  : "text-[#0B6839] hover:bg-white"
+              }`}
+            >
+              <Sun className="w-3 h-3 text-[#FEE101]" />
+              <span>LIGHT</span>
+            </button>
+            <button
+              onClick={() => setCardTheme("dark")}
+              className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1 ${
+                cardTheme === "dark"
+                  ? "bg-[#051A10] text-[#00FF88] border border-[#00FF88] shadow-[2px_2px_0px_#00FF88]"
+                  : "text-[#0B6839] hover:bg-white"
+              }`}
+            >
+              <Moon className="w-3 h-3 text-[#FF3B77]" />
+              <span>DARK</span>
+            </button>
+          </div>
         </div>
 
-        {/* Live Canvas Interactive Box with Parchment Border */}
+        {/* OUTSIDE DRAG REPOSITION HINT BAR */}
+        <div className="w-full max-w-md bg-[#FFFBE8] border-2 border-[#0B6839] px-3 py-1.5 rounded flex items-center justify-between text-[11px] font-bold text-[#0B6839] shadow-[2px_2px_0px_#0B6839]">
+          <div className="flex items-center gap-1.5">
+            <Move className="w-3.5 h-3.5 text-[#FF3B77]" />
+            <span>DRAG CANVAS TO REPOSITION CROP</span>
+          </div>
+          <span className="text-[10px] bg-[#FF3B77] text-white px-1.5 py-0.5 rounded">60 FPS</span>
+        </div>
+
+        {/* Live Canvas Interactive Box */}
         <div className="relative w-full max-w-md aspect-[1080/1350] bg-[#FFFBE8] rounded-lg border-4 border-[#0B6839] overflow-hidden shadow-[8px_8px_0px_#0B6839] group touch-none select-none">
           {/* Loader overlay */}
           {isAssetsLoading && (
             <div className="absolute inset-0 z-20 bg-[#FFFBE8] flex flex-col items-center justify-center gap-3 text-[#0B6839] font-mono p-6">
               <Stamp className="w-8 h-8 text-[#FF3B77] animate-bounce" />
               <div className="text-xs tracking-wider flex items-center gap-1">
-                <span className="text-[#FF3B77]">INITIALIZING POSTER ENGINE...</span>
+                <span className="text-[#FF3B77]">INITIALIZING CARD ENGINE...</span>
                 <span className="animate-cursor-blink text-[#0B6839]">_</span>
               </div>
             </div>
@@ -400,17 +445,11 @@ export default function IdGenerator() {
             onPointerCancel={handlePointerUp}
             className="w-full h-full object-contain cursor-grab active:cursor-grabbing"
           />
-
-          {/* Drag Overlay Hint */}
-          <div className="absolute top-3 left-3 pointer-events-none bg-[#FFFBE8]/90 backdrop-blur-md px-3 py-1.5 rounded border-2 border-[#0B6839] text-[10px] text-[#0B6839] flex items-center gap-1.5 font-mono shadow-[2px_2px_0px_#0B6839]">
-            <Move className="w-3 h-3 text-[#FF3B77]" />
-            <span>DRAG CANVAS TO REPOSITION CROP</span>
-          </div>
         </div>
       </div>
 
       {/* RIGHT COLUMN: Form Controls & Action Buttons */}
-      <div className="w-full lg:w-1/2 flex flex-col gap-5">
+      <div className="w-full lg:w-1/2 flex flex-col gap-4">
         {/* Upload Dropzone */}
         <div 
           onClick={() => fileInputRef.current?.click()}
@@ -472,7 +511,7 @@ export default function IdGenerator() {
           </div>
         )}
 
-        {/* Form Inputs: Name & Stack */}
+        {/* Form Inputs: Name, Team Name, Stack */}
         <div className="flex flex-col gap-3.5 p-4 rounded-lg bg-[#FFFBE8] border-2 border-[#0B6839] shadow-[4px_4px_0px_#0B6839]">
           {/* Name Field */}
           <div className="flex flex-col gap-1.5">
@@ -486,7 +525,22 @@ export default function IdGenerator() {
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Satapathy / Alex"
               maxLength={28}
-              className="w-full bg-[#F7F1E1] border-2 border-[#0B6839] rounded px-3 py-2.5 text-xs text-[#0B6839] placeholder-[#0B6839]/50 focus:outline-none focus:border-[#FF3B77] font-bold uppercase transition-colors font-mono"
+              className="w-full bg-[#F7F1E1] border-2 border-[#0B6839] rounded px-3 py-2 text-xs text-[#0B6839] placeholder-[#0B6839]/50 focus:outline-none focus:border-[#FF3B77] font-bold uppercase transition-colors font-mono"
+            />
+          </div>
+
+          {/* Team Name Field */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-bold text-[#0B6839]">
+              TEAM NAME (OPTIONAL)
+            </label>
+            <input
+              type="text"
+              value={teamName}
+              onChange={(e) => setTeamName(e.target.value)}
+              placeholder="e.g. Solana Surfers / Neural Alchemists"
+              maxLength={32}
+              className="w-full bg-[#F7F1E1] border-2 border-[#0B6839] rounded px-3 py-2 text-xs text-[#0B6839] placeholder-[#0B6839]/50 focus:outline-none focus:border-[#FF3B77] font-bold uppercase transition-colors font-mono"
             />
           </div>
 
@@ -501,7 +555,7 @@ export default function IdGenerator() {
               onChange={(e) => setStack(e.target.value)}
               placeholder="e.g. Rust, Solana, AI, Full-stack"
               maxLength={36}
-              className="w-full bg-[#F7F1E1] border-2 border-[#0B6839] rounded px-3 py-2.5 text-xs text-[#0B6839] placeholder-[#0B6839]/50 focus:outline-none focus:border-[#FF3B77] transition-colors font-mono"
+              className="w-full bg-[#F7F1E1] border-2 border-[#0B6839] rounded px-3 py-2 text-xs text-[#0B6839] placeholder-[#0B6839]/50 focus:outline-none focus:border-[#FF3B77] transition-colors font-mono"
             />
           </div>
 
