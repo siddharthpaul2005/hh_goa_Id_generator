@@ -1,9 +1,9 @@
 export default function GoaBackground() {
   return (
-    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden flex items-end justify-between">
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden flex items-end justify-between select-none">
       
       {/* Left Palm Tree */}
-      <div className="absolute top-0 left-0 w-[150px] md:w-[450px] h-[100vh] origin-top-left pointer-events-none opacity-50 md:opacity-100">
+      <div className="absolute top-0 left-0 w-[120px] sm:w-[200px] md:w-[280px] lg:w-[320px] xl:w-[360px] h-[100vh] origin-top-left pointer-events-none opacity-30 md:opacity-45 transition-opacity">
         <svg viewBox="0 0 400 800" className="w-full h-full" preserveAspectRatio="xMinYMax slice">
           {/* Trunk */}
           <path d="M 0 800 Q 150 500 200 200 L 230 200 Q 180 500 50 800 Z" fill="#FFFFFF" stroke="#000000" strokeWidth="6" />
@@ -42,7 +42,7 @@ export default function GoaBackground() {
       </div>
 
       {/* Right Palm Tree */}
-      <div className="absolute top-0 right-0 w-[150px] md:w-[450px] h-[100vh] origin-top-right pointer-events-none opacity-50 md:opacity-100">
+      <div className="absolute top-0 right-0 w-[120px] sm:w-[200px] md:w-[280px] lg:w-[320px] xl:w-[360px] h-[100vh] origin-top-right pointer-events-none opacity-30 md:opacity-45 transition-opacity">
         <svg viewBox="0 0 400 800" className="w-full h-full" preserveAspectRatio="xMaxYMax slice">
           {/* Trunk */}
           <path d="M 400 800 Q 250 500 200 200 L 170 200 Q 220 500 350 800 Z" fill="#FFFFFF" stroke="#000000" strokeWidth="6" />
@@ -79,8 +79,6 @@ export default function GoaBackground() {
           </g>
         </svg>
       </div>
-
-
 
     </div>
   );

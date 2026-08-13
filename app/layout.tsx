@@ -36,6 +36,7 @@ const bodoni = Bodoni_Moda({
   weight: ["700", "900"],
   style: ["normal", "italic"],
   display: "swap",
+  adjustFontFallback: false,
 });
 
 const notoSansDevanagari = Noto_Sans_Devanagari({

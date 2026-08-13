@@ -13,7 +13,6 @@ const nextConfig = {
     config.resolve.fallback = { fs: false, path: false };
     return config;
   },
-  turbopack: {},
 };
 
 export default nextConfig;

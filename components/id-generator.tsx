@@ -330,7 +330,7 @@ export default function IdGenerator() {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-10 p-2 font-mono stagger-2 text-black">
+    <div className="w-full max-w-5xl mx-auto flex flex-col lg:flex-row items-center lg:items-start justify-center gap-4 lg:gap-8 p-1 sm:p-2 font-mono stagger-2 text-black">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-6 right-6 z-50 hh-panel-pink text-xs px-4 py-3 rounded shadow-[4px_4px_0px_#000000] flex items-center gap-2.5 animate-bounce font-mono font-bold">
@@ -358,14 +358,14 @@ export default function IdGenerator() {
       />
 
       {/* LEFT COLUMN: Live Canvas Preview */}
-      <div className="w-full lg:w-1/2 flex flex-col items-center gap-3">
+      <div className="w-full lg:w-1/2 flex flex-col items-center gap-2 sm:gap-2.5">
         {/* Toggles Bar: Mode Selector */}
-        <div className="w-full max-w-md flex gap-2">
+        <div className="w-full max-w-[340px] sm:max-w-[380px] lg:max-w-[400px] flex gap-2">
           {/* Mode Switcher Tabs */}
-          <div className="flex-1 grid grid-cols-2 p-1 rounded border-2 bg-[var(--panel-alt-bg)] border-black">
+          <div className="flex-1 grid grid-cols-2 p-1 rounded border-2 bg-[var(--panel-alt-bg)] border-black shadow-[2px_2px_0px_#000]">
             <button
               onClick={() => handleModeChange("single")}
-              className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 ${mode === "single"
+              className={`py-1 px-2 rounded text-[10px] sm:text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 ${mode === "single"
                   ? "tab-hh-active"
                   : "tab-hh-inactive hover:bg-black/10"
                 }`}
@@ -375,7 +375,7 @@ export default function IdGenerator() {
             </button>
             <button
               onClick={() => handleModeChange("squad")}
-              className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 ${mode === "squad"
+              className={`py-1 px-2 rounded text-[10px] sm:text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 ${mode === "squad"
                   ? "tab-hh-active"
                   : "tab-hh-inactive hover:bg-black/10"
                 }`}
@@ -387,16 +387,16 @@ export default function IdGenerator() {
         </div>
 
         {/* OUTSIDE DRAG REPOSITION HINT BAR */}
-        <div className="w-full max-w-[420px] hh-panel-pink px-2 py-1.5 rounded flex items-center justify-between text-[10px] font-bold shadow-[3px_3px_0px_#000000]">
+        <div className="w-full max-w-[340px] sm:max-w-[380px] lg:max-w-[400px] hh-panel-pink px-2 py-1 rounded flex items-center justify-between text-[10px] font-bold shadow-[2px_2px_0px_#000000]">
           <div className="flex items-center gap-1.5 text-white">
             <Move className="w-3 h-3 text-white" />
             <span>DRAG CANVAS TO REPOSITION</span>
           </div>
-          <span className="text-[9px] bg-white text-[var(--accent-pink)] px-1.5 py-0.5 rounded font-mono border border-black shadow-[1px_1px_0px_#000]">REALTIME</span>
+          <span className="text-[8px] sm:text-[9px] bg-white text-[var(--accent-pink)] px-1.5 py-0.5 rounded font-mono border border-black shadow-[1px_1px_0px_#000]">REALTIME</span>
         </div>
 
         {/* Live Canvas Interactive Box */}
-        <div className="relative w-full max-w-[420px] aspect-[1080/1350] rounded-xl overflow-hidden shadow-[8px_8px_0px_rgba(0,0,0,1)] group touch-none select-none hh-card">
+        <div className="relative w-full max-w-[340px] sm:max-w-[380px] lg:max-w-[390px] xl:max-w-[410px] aspect-[1080/1350] max-h-[calc(100vh-230px)] rounded-xl overflow-hidden shadow-[6px_6px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_rgba(0,0,0,1)] group touch-none select-none hh-card shrink-0">
           {/* Loader overlay */}
           {isAssetsLoading && (
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 font-mono p-6 hh-panel-pink text-white">
@@ -423,21 +423,21 @@ export default function IdGenerator() {
       </div>
 
       {/* RIGHT COLUMN: Form Controls & Action Buttons */}
-      <div className="w-full lg:w-[400px] flex flex-col gap-2 text-black">
+      <div className="w-full lg:w-[380px] xl:w-[400px] max-w-[400px] flex flex-col gap-2 text-black">
         {/* Upload Dropzone */}
         <div
           onClick={() => fileInputRef.current?.click()}
-          className="w-full p-2 rounded-lg border-[3px] border-black transition-all cursor-pointer flex flex-col items-center justify-center gap-1 group shadow-[4px_4px_0px_#000000] bg-white hover:bg-gray-100"
+          className="w-full p-2 rounded-lg border-[2px] sm:border-[3px] border-black transition-all cursor-pointer flex flex-col items-center justify-center gap-1 group shadow-[3px_3px_0px_#000000] sm:shadow-[4px_4px_0px_#000000] bg-white hover:bg-gray-100"
         >
-          <div className="w-10 h-10 rounded-md bg-[var(--accent-pink)] border-2 border-black flex items-center justify-center group-hover:scale-110 transition-transform">
-            <Camera className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-md bg-[var(--accent-pink)] border-2 border-black flex items-center justify-center group-hover:scale-105 transition-transform">
+            <Camera className="w-4 h-4 text-white" />
           </div>
           <div className="text-center">
-            <p className="text-xs font-bold flex items-center gap-1.5 justify-center tracking-wider text-black">
+            <p className="text-[11px] sm:text-xs font-bold flex items-center gap-1.5 justify-center tracking-wider text-black">
               <Upload className="w-3.5 h-3.5 text-[var(--accent-pink)]" />
               <span>{photos[0]?.image ? "[ CHANGE BUILDER PHOTO ]" : "[ UPLOAD BUILDER PHOTO ]"}</span>
             </p>
-            <p className="text-[10px] opacity-75 mt-1 font-mono text-black">
+            <p className="text-[9px] sm:text-[10px] opacity-75 mt-0.5 font-mono text-black">
               Supports JPG, PNG, WEBP, HEIC (iPhone gallery / camera)
             </p>
           </div>
@@ -445,30 +445,30 @@ export default function IdGenerator() {
 
         {/* Squad Member Selector */}
         {mode === "squad" && (
-          <div className="flex flex-col gap-1 p-2 rounded-lg border-2 border-black shadow-[4px_4px_0px_#000000] hh-panel-yellow text-black">
+          <div className="flex flex-col gap-1 p-2 rounded-lg border-2 border-black shadow-[3px_3px_0px_#000000] sm:shadow-[4px_4px_0px_#000000] hh-panel-yellow text-black">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold">TEAMMATES ({photos.length}/4)</span>
               {photos.length < 4 && (
                 <button
                   onClick={addSquadMember}
-                  className="text-[9px] bg-[var(--accent-pink)] text-white px-2 py-1 rounded font-bold font-mono border border-black shadow-[1px_1px_0px_#000]"
+                  className="text-[9px] bg-[var(--accent-pink)] text-white px-2 py-0.5 rounded font-bold font-mono border border-black shadow-[1px_1px_0px_#000]"
                 >
                   + ADD TEAMMATE
                 </button>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1.5">
               {photos.map((p, idx) => (
                 <div
                   key={idx}
                   onClick={() => setActivePhotoIdx(idx)}
-                  className={`p-2 rounded border-2 border-black text-xs flex flex-col gap-1 cursor-pointer transition-all ${activePhotoIdx === idx
+                  className={`p-1.5 rounded border-2 border-black text-xs flex flex-col gap-0.5 cursor-pointer transition-all ${activePhotoIdx === idx
                       ? "bg-[var(--accent-pink)] text-white"
                       : "bg-white text-black"
                     }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-[10px]">SLOT #{idx + 1}</span>
+                    <span className="font-bold text-[9px]">SLOT #{idx + 1}</span>
                     {p.image && <Check className={`w-3 h-3 ${activePhotoIdx === idx ? "text-white" : "text-[var(--accent-pink)]"}`} />}
                   </div>
                   <input
@@ -485,12 +485,12 @@ export default function IdGenerator() {
         )}
 
         {/* Form Inputs */}
-        <div className="flex flex-col gap-1.5 p-2 rounded-lg border-2 border-black shadow-[4px_4px_0px_#000000] hh-panel-yellow text-black">
+        <div className="flex flex-col gap-1 sm:gap-1.5 p-2 rounded-lg border-2 border-black shadow-[3px_3px_0px_#000000] sm:shadow-[4px_4px_0px_#000000] hh-panel-yellow text-black">
           {/* Name Field */}
           <div className="flex flex-col gap-0.5">
-            <label className="text-[10px] font-bold flex items-center justify-between">
+            <label className="text-[9px] sm:text-[10px] font-bold flex items-center justify-between">
               <span>BUILDER NAME</span>
-              <span className="text-[9px] text-[var(--accent-pink)]">[ REQUIRED ]</span>
+              <span className="text-[8px] sm:text-[9px] text-[var(--accent-pink)]">[ REQUIRED ]</span>
             </label>
             <input
               type="text"
@@ -498,13 +498,13 @@ export default function IdGenerator() {
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Siddharth Paul "
               maxLength={36}
-              className="w-full border-2 border-black rounded px-2 py-1 text-[11px] focus:outline-none focus:border-[var(--accent-pink)] font-bold uppercase transition-colors font-mono bg-white text-black"
+              className="w-full border-2 border-black rounded px-2 py-0.5 sm:py-1 text-[10px] sm:text-[11px] focus:outline-none focus:border-[var(--accent-pink)] font-bold uppercase transition-colors font-mono bg-white text-black"
             />
           </div>
 
           {/* Currently Building / Shipping Field */}
           <div className="flex flex-col gap-0.5">
-            <label className="text-[10px] font-bold flex items-center gap-1">
+            <label className="text-[9px] sm:text-[10px] font-bold flex items-center gap-1">
               <Rocket className="w-3 h-3 text-[var(--accent-pink)]" />
               <span>CURRENTLY SHIPPING / BUILDING</span>
             </label>
@@ -514,13 +514,13 @@ export default function IdGenerator() {
               onChange={(e) => setShipping(e.target.value)}
               placeholder="e.g. Solana DEX & AI Agents"
               maxLength={40}
-              className="w-full border-2 border-black rounded px-2 py-1 text-[11px] focus:outline-none focus:border-[var(--accent-pink)] font-mono bg-white text-black"
+              className="w-full border-2 border-black rounded px-2 py-0.5 sm:py-1 text-[10px] sm:text-[11px] focus:outline-none focus:border-[var(--accent-pink)] font-mono bg-white text-black"
             />
           </div>
 
           {/* Fuel / Runs On Field */}
           <div className="flex flex-col gap-0.5">
-            <label className="text-[10px] font-bold flex items-center gap-1">
+            <label className="text-[9px] sm:text-[10px] font-bold flex items-center gap-1">
               <Coffee className="w-3 h-3 text-[var(--accent-pink)]" />
               <span>FUEL / RUNS ON</span>
             </label>
@@ -530,13 +530,13 @@ export default function IdGenerator() {
               onChange={(e) => setRunsOn(e.target.value)}
               placeholder="e.g. Espresso & ZK Proofs"
               maxLength={40}
-              className="w-full border-2 border-black rounded px-2 py-1 text-[11px] focus:outline-none focus:border-[var(--accent-pink)] font-mono bg-white text-black"
+              className="w-full border-2 border-black rounded px-2 py-0.5 sm:py-1 text-[10px] sm:text-[11px] focus:outline-none focus:border-[var(--accent-pink)] font-mono bg-white text-black"
             />
           </div>
 
           {/* Stack / Role Field */}
           <div className="flex flex-col gap-0.5">
-            <label className="text-[10px] font-bold">
+            <label className="text-[9px] sm:text-[10px] font-bold">
               STACK / SKILLS (COMMA SEPARATED)
             </label>
             <input
@@ -545,15 +545,15 @@ export default function IdGenerator() {
               onChange={(e) => setStack(e.target.value)}
               placeholder="e.g. Full-stack, Rust, Solana, AI"
               maxLength={36}
-              className="w-full border-2 border-black rounded px-2 py-1 text-[11px] focus:outline-none focus:border-[var(--accent-pink)] transition-colors font-mono bg-white text-black"
+              className="w-full border-2 border-black rounded px-2 py-0.5 sm:py-1 text-[10px] sm:text-[11px] focus:outline-none focus:border-[var(--accent-pink)] transition-colors font-mono bg-white text-black"
             />
           </div>
 
           {/* Team Name Field */}
           <div className="flex flex-col gap-0.5">
-            <label className="text-[10px] font-bold flex items-center justify-between">
+            <label className="text-[9px] sm:text-[10px] font-bold flex items-center justify-between">
               <span>TEAM NAME</span>
-              <span className="text-[9px] text-[var(--accent-pink)]">[ REQUIRED ]</span>
+              <span className="text-[8px] sm:text-[9px] text-[var(--accent-pink)]">[ REQUIRED ]</span>
             </label>
             <input
               type="text"
@@ -561,27 +561,27 @@ export default function IdGenerator() {
               onChange={(e) => setTeamName(e.target.value)}
               placeholder="e.g. Solana Surfers / Protocol Vanguard"
               maxLength={32}
-              className="w-full border-2 border-black rounded px-2 py-1 text-[11px] focus:outline-none focus:border-[var(--accent-pink)] font-bold uppercase transition-colors font-mono bg-white text-black"
+              className="w-full border-2 border-black rounded px-2 py-0.5 sm:py-1 text-[10px] sm:text-[11px] focus:outline-none focus:border-[var(--accent-pink)] font-bold uppercase transition-colors font-mono bg-white text-black"
             />
           </div>
 
           {/* Builder Title */}
-          <div className="flex flex-col gap-0.5 pt-1">
+          <div className="flex flex-col gap-0.5 pt-0.5">
             <div className="flex items-center justify-between">
-              <label className="text-[10px] font-bold flex items-center gap-1">
+              <label className="text-[9px] sm:text-[10px] font-bold flex items-center gap-1">
                 <Sparkles className="w-3 h-3 text-[var(--accent-pink)]" />
                 <span>BUILDER CLASS TITLE</span>
               </label>
               <button
                 type="button"
                 onClick={handleRerollTitle}
-                className="px-1.5 py-0.5 text-[9px] font-mono flex items-center gap-1 rounded border border-black hover:bg-[var(--accent-pink)] hover:text-white transition-colors"
+                className="px-1.5 py-0.5 text-[8px] sm:text-[9px] font-mono flex items-center gap-1 rounded border border-black hover:bg-[var(--accent-pink)] hover:text-white transition-colors"
               >
                 <RefreshCw className="w-2.5 h-2.5" />
                 <span>[ SHUFFLE ]</span>
               </button>
             </div>
-            <div className="w-full border-2 border-black rounded px-2 py-1 text-[11px] font-bold text-white bg-[var(--accent-pink)] tracking-wider flex items-center justify-between font-mono">
+            <div className="w-full border-2 border-black rounded px-2 py-0.5 sm:py-1 text-[10px] sm:text-[11px] font-bold text-white bg-[var(--accent-pink)] tracking-wider flex items-center justify-between font-mono">
               <span>[ {builderTitle} ]</span>
               <span className="text-[8px] bg-white text-[var(--accent-pink)] px-1 py-0.5 rounded font-bold border border-black">DETERMINISTIC</span>
             </div>
@@ -589,12 +589,12 @@ export default function IdGenerator() {
         </div>
 
         {/* Retro Tactile Action Buttons */}
-        <div className="grid grid-cols-2 gap-2 mt-0.5 shrink-0">
+        <div className="grid grid-cols-2 gap-2 shrink-0">
           {/* Download Button */}
           <button
             onClick={handleDownload}
             disabled={isAssetsLoading}
-            className="btn-hh-accent py-2 px-3 flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-wider disabled:opacity-50"
+            className="btn-hh-accent py-1.5 sm:py-2 px-2 sm:px-3 flex items-center justify-center gap-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider disabled:opacity-50"
           >
             <Download className="w-3.5 h-3.5" />
             <span>[ DOWNLOAD PNG ]</span>
@@ -604,7 +604,7 @@ export default function IdGenerator() {
           <button
             onClick={handleShare}
             disabled={isSharing || isAssetsLoading}
-            className="btn-hh-primary py-2 px-3 flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-wider disabled:opacity-50"
+            className="btn-hh-primary py-1.5 sm:py-2 px-2 sm:px-3 flex items-center justify-center gap-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider disabled:opacity-50"
           >
             <Share2 className={`w-4 h-4 ${isSharing ? "animate-spin" : ""}`} />
             <span>{isSharing ? "[ UPLOADING... ]" : "[ SHARE TO X ]"}</span>
