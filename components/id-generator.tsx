@@ -1,30 +1,32 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { 
-  Upload, 
-  Download, 
-  Share2, 
-  RefreshCw, 
-  User, 
-  Users, 
-  Sparkles, 
-  Move, 
-  Camera, 
-  Check, 
+import {
+  Upload,
+  Download,
+  Share2,
+  RefreshCw,
+  User,
+  Users,
+  Sparkles,
+  Move,
+  Camera,
+  Check,
   Zap,
   Stamp,
   Sun,
-  Moon
+  Moon,
+  Rocket,
+  Coffee
 } from "lucide-react";
-import { 
-  CardData, 
-  PhotoCropState, 
-  CANVAS_WIDTH, 
-  CANVAS_HEIGHT, 
-  loadBrandAssets, 
-  ensureFontsLoaded, 
-  compositeFullCard 
+import {
+  CardData,
+  PhotoCropState,
+  CANVAS_WIDTH,
+  CANVAS_HEIGHT,
+  loadBrandAssets,
+  ensureFontsLoaded,
+  compositeFullCard
 } from "@/lib/canvas-engine";
 import { generateBuilderTitle } from "@/lib/builder-titles";
 import { convertHeicToJpeg } from "@/lib/heic-converter";
@@ -40,7 +42,9 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
   const [cardTheme, setCardTheme] = useState<"light" | "dark">("dark");
   const [name, setName] = useState("");
   const [teamName, setTeamName] = useState("");
-  const [stack, setStack] = useState("");
+  const [shipping, setShipping] = useState("Solana DEX & AI Agents");
+  const [runsOn, setRunsOn] = useState("Espresso & ZK Proofs");
+  const [stack, setStack] = useState("Full-stack, Rust, Solana, AI");
   const [builderTitle, setBuilderTitle] = useState("PROTOCOL VANGUARD");
   const [titleOverridden, setTitleOverridden] = useState(false);
   const [photos, setPhotos] = useState<PhotoCropState[]>([
@@ -111,6 +115,8 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
         photos,
         name,
         teamName,
+        shipping,
+        runsOn,
         stack,
         builderTitle,
         nodeId: `HHG26-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -123,13 +129,13 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
         compositeFullCard(exportCanvasRef.current, cardData);
       }
     });
-  }, [mode, cardTheme, photos, name, teamName, stack, builderTitle]);
+  }, [mode, cardTheme, photos, name, teamName, shipping, runsOn, stack, builderTitle]);
 
   useEffect(() => {
     if (!isAssetsLoading) {
       triggerRedraw();
     }
-  }, [isAssetsLoading, mode, cardTheme, photos, name, teamName, stack, builderTitle, triggerRedraw]);
+  }, [isAssetsLoading, mode, cardTheme, photos, name, teamName, shipping, runsOn, stack, builderTitle, triggerRedraw]);
 
   // 5. Image File Handler
   const processImageFile = async (file: File, targetIdx: number) => {
@@ -213,7 +219,7 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
     isDraggingRef.current = false;
     try {
       (e.target as HTMLElement).releasePointerCapture(e.pointerId);
-    } catch {}
+    } catch { }
   };
 
   // 7. Toast Helper
@@ -374,48 +380,44 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
           <div className={`flex-1 grid grid-cols-2 p-1 rounded border-2 ${isDarkSite ? "bg-[#062B19] border-[#00FF88]" : "bg-[#F4EFE2] border-[#0B6839]"}`}>
             <button
               onClick={() => handleModeChange("single")}
-              className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 ${
-                mode === "single"
+              className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 ${mode === "single"
                   ? "tab-hh-active"
                   : "tab-hh-inactive hover:bg-white/10"
-              }`}
+                }`}
             >
               <User className="w-3.5 h-3.5" />
               <span>SINGLE ID</span>
             </button>
             <button
               onClick={() => handleModeChange("squad")}
-              className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 ${
-                mode === "squad"
+              className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 ${mode === "squad"
                   ? "tab-hh-active"
                   : "tab-hh-inactive hover:bg-white/10"
-              }`}
+                }`}
             >
               <Users className="w-3.5 h-3.5" />
               <span>SQUAD FRAME</span>
             </button>
           </div>
 
-          {/* Card Theme Switcher (DARK CARD vs LIGHT CARD) */}
+          {/* Card Theme Switcher */}
           <div className={`grid grid-cols-2 p-1 rounded border-2 ${isDarkSite ? "bg-[#062B19] border-[#00FF88]" : "bg-[#F4EFE2] border-[#0B6839]"}`}>
             <button
               onClick={() => setCardTheme("dark")}
-              className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1 ${
-                cardTheme === "dark"
+              className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1 ${cardTheme === "dark"
                   ? "bg-[#051F14] text-[#00FF88] border border-[#00FF88] shadow-[2px_2px_0px_#000000]"
                   : "text-current hover:bg-white/10"
-              }`}
+                }`}
             >
               <Moon className="w-3 h-3 text-[#FF3B77]" />
               <span>DARK</span>
             </button>
             <button
               onClick={() => setCardTheme("light")}
-              className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1 ${
-                cardTheme === "light"
+              className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1 ${cardTheme === "light"
                   ? "bg-[#FFFBE8] text-[#0B6839] border border-[#0B6839] shadow-[2px_2px_0px_#000000]"
                   : "text-current hover:bg-white/10"
-              }`}
+                }`}
             >
               <Sun className="w-3 h-3 text-[#FEE101]" />
               <span>LIGHT</span>
@@ -462,7 +464,7 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
       {/* RIGHT COLUMN: Form Controls & Action Buttons */}
       <div className="w-full lg:w-1/2 flex flex-col gap-4">
         {/* Upload Dropzone */}
-        <div 
+        <div
           onClick={() => fileInputRef.current?.click()}
           className={`w-full p-4 rounded-lg border-3 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group shadow-[4px_4px_0px_#000000] ${isDarkSite ? "bg-[#0A3D24] border-[#00FF88] hover:bg-[#062B19]" : "bg-[#FFFBE8] border-[#0B6839] hover:bg-[#F7F1E1]"}`}
         >
@@ -496,14 +498,13 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
             </div>
             <div className="grid grid-cols-2 gap-2">
               {photos.map((p, idx) => (
-                <div 
+                <div
                   key={idx}
                   onClick={() => setActivePhotoIdx(idx)}
-                  className={`p-2 rounded border-2 text-xs flex flex-col gap-1 cursor-pointer transition-all ${
-                    activePhotoIdx === idx 
-                      ? "border-[#FF3B77] bg-[#FF3B77]/20" 
+                  className={`p-2 rounded border-2 text-xs flex flex-col gap-1 cursor-pointer transition-all ${activePhotoIdx === idx
+                      ? "border-[#FF3B77] bg-[#FF3B77]/20"
                       : "border-current bg-black/20"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-[10px]">SLOT #{idx + 1}</span>
@@ -522,10 +523,10 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
           </div>
         )}
 
-        {/* Form Inputs: Name, Team Name, Stack */}
-        <div className={`flex flex-col gap-3.5 p-4 rounded-lg border-2 shadow-[4px_4px_0px_#000000] ${isDarkSite ? "bg-[#0A3D24] border-[#00FF88]" : "bg-[#FFFBE8] border-[#0B6839]"}`}>
+        {/* Form Inputs */}
+        <div className={`flex flex-col gap-3 p-4 rounded-lg border-2 shadow-[4px_4px_0px_#000000] ${isDarkSite ? "bg-[#0A3D24] border-[#00FF88]" : "bg-[#FFFBE8] border-[#0B6839]"}`}>
           {/* Name Field */}
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1">
             <label className="text-[11px] font-bold flex items-center justify-between">
               <span>BUILDER NAME</span>
               <span className="text-[10px] text-[#FF3B77]">[ REQUIRED ]</span>
@@ -534,29 +535,46 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Siddharth / Alex"
-              maxLength={28}
-              className={`w-full border-2 rounded px-3 py-2 text-xs focus:outline-none focus:border-[#FF3B77] font-bold uppercase transition-colors font-mono ${isDarkSite ? "bg-[#051F14] border-[#00FF88] text-white" : "bg-[#F7F1E1] border-[#0B6839] text-[#0A291A]"}`}
+              placeholder="e.g. Siddharth Paul "
+              maxLength={36}
+              className={`w-full border-2 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-[#FF3B77] font-bold uppercase transition-colors font-mono ${isDarkSite ? "bg-[#051F14] border-[#00FF88] text-white" : "bg-[#F7F1E1] border-[#0B6839] text-[#0A291A]"}`}
             />
           </div>
 
-          {/* Team Name Field */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-bold">
-              TEAM NAME (OPTIONAL)
+          {/* Currently Building / Shipping Field */}
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-bold flex items-center gap-1">
+              <Rocket className="w-3 h-3 text-[#FEE101]" />
+              <span>CURRENTLY SHIPPING / BUILDING</span>
             </label>
             <input
               type="text"
-              value={teamName}
-              onChange={(e) => setTeamName(e.target.value)}
-              placeholder="e.g. Solana Surfers / Protocol Vanguard"
-              maxLength={32}
-              className={`w-full border-2 rounded px-3 py-2 text-xs focus:outline-none focus:border-[#FF3B77] font-bold uppercase transition-colors font-mono ${isDarkSite ? "bg-[#051F14] border-[#00FF88] text-white" : "bg-[#F7F1E1] border-[#0B6839] text-[#0A291A]"}`}
+              value={shipping}
+              onChange={(e) => setShipping(e.target.value)}
+              placeholder="e.g. Solana DEX & AI Agents"
+              maxLength={40}
+              className={`w-full border-2 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-[#FF3B77] font-mono ${isDarkSite ? "bg-[#051F14] border-[#00FF88] text-white" : "bg-[#F7F1E1] border-[#0B6839] text-[#0A291A]"}`}
+            />
+          </div>
+
+          {/* Fuel / Runs On Field */}
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-bold flex items-center gap-1">
+              <Coffee className="w-3 h-3 text-[#FEE101]" />
+              <span>FUEL / RUNS ON</span>
+            </label>
+            <input
+              type="text"
+              value={runsOn}
+              onChange={(e) => setRunsOn(e.target.value)}
+              placeholder="e.g. Espresso & ZK Proofs"
+              maxLength={40}
+              className={`w-full border-2 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-[#FF3B77] font-mono ${isDarkSite ? "bg-[#051F14] border-[#00FF88] text-white" : "bg-[#F7F1E1] border-[#0B6839] text-[#0A291A]"}`}
             />
           </div>
 
           {/* Stack / Role Field */}
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1">
             <label className="text-[11px] font-bold">
               STACK / SKILLS (COMMA SEPARATED)
             </label>
@@ -566,12 +584,27 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
               onChange={(e) => setStack(e.target.value)}
               placeholder="e.g. Full-stack, Rust, Solana, AI"
               maxLength={36}
-              className={`w-full border-2 rounded px-3 py-2 text-xs focus:outline-none focus:border-[#FF3B77] transition-colors font-mono ${isDarkSite ? "bg-[#051F14] border-[#00FF88] text-white" : "bg-[#F7F1E1] border-[#0B6839] text-[#0A291A]"}`}
+              className={`w-full border-2 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-[#FF3B77] transition-colors font-mono ${isDarkSite ? "bg-[#051F14] border-[#00FF88] text-white" : "bg-[#F7F1E1] border-[#0B6839] text-[#0A291A]"}`}
             />
           </div>
 
-          {/* Builder Title (Auto-generated + Reroll) */}
-          <div className="flex flex-col gap-1.5 pt-1">
+          {/* Team Name Field */}
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-bold">
+              TEAM NAME (OPTIONAL)
+            </label>
+            <input
+              type="text"
+              value={teamName}
+              onChange={(e) => setTeamName(e.target.value)}
+              placeholder="e.g. Solana Surfers / Protocol Vanguard"
+              maxLength={32}
+              className={`w-full border-2 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-[#FF3B77] font-bold uppercase transition-colors font-mono ${isDarkSite ? "bg-[#051F14] border-[#00FF88] text-white" : "bg-[#F7F1E1] border-[#0B6839] text-[#0A291A]"}`}
+            />
+          </div>
+
+          {/* Builder Title */}
+          <div className="flex flex-col gap-1 pt-1">
             <div className="flex items-center justify-between">
               <label className="text-[11px] font-bold flex items-center gap-1">
                 <Sparkles className="w-3.5 h-3.5 text-[#FF3B77]" />
@@ -586,7 +619,7 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
                 <span>[ SHUFFLE ]</span>
               </button>
             </div>
-            <div className={`w-full border-2 rounded px-3 py-2.5 text-xs font-bold text-[#FF3B77] tracking-wider flex items-center justify-between font-mono ${isDarkSite ? "bg-[#051F14] border-[#00FF88]" : "bg-[#F7F1E1] border-[#0B6839]"}`}>
+            <div className={`w-full border-2 rounded px-3 py-2 text-xs font-bold text-[#FF3B77] tracking-wider flex items-center justify-between font-mono ${isDarkSite ? "bg-[#051F14] border-[#00FF88]" : "bg-[#F7F1E1] border-[#0B6839]"}`}>
               <span>[ {builderTitle} ]</span>
               <span className="text-[9px] bg-[#FF3B77] text-white px-1.5 py-0.5 rounded font-bold">DETERMINISTIC</span>
             </div>
