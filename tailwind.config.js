@@ -24,6 +24,8 @@ module.exports = {
       fontFamily: {
         display: ["var(--font-syne)", "sans-serif"],
         mono: ["var(--font-jetbrains-mono)", "monospace"],
+        permanentMarker: ["var(--font-permanent-marker)", "cursive"],
+        vt323: ["var(--font-vt323)", "monospace"],
       },
       backgroundImage: {
         'sunrise-gradient': 'linear-gradient(135deg, #FF5027 0%, #E71D73 50%, #7000FF 100%)',

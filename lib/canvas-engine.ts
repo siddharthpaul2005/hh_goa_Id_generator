@@ -9,7 +9,7 @@ export interface PhotoCropState {
 
 export interface CardData {
   mode: "single" | "squad";
-  cardTheme: "light" | "dark";
+  cardTheme: "light" | "dark"; // Unused now, but kept for interface compat
   photos: PhotoCropState[]; // 1 for single, 2-4 for squad
   name: string;
   teamName?: string;
@@ -28,20 +28,16 @@ let cachedLayer1Canvas: HTMLCanvasElement | null = null;
 let brandImages: Record<string, HTMLImageElement> = {};
 let brandImagesLoaded = false;
 
-/**
- * Preload brand images (Hacker house, Sun rise texture, etc.)
- */
 export async function loadBrandAssets(): Promise<Record<string, HTMLImageElement>> {
   if (brandImagesLoaded) return brandImages;
 
   const assetUrls = {
     hackerHouse: "/brand/hacker_house.png",
-    sunRise: "/brand/sun_rise.png",
-    footerTrees: "/brand/footer_trees.png",
+    goaHindi: "/brand/goa_hindi.svg",
   };
 
   const promises = Object.entries(assetUrls).map(([key, url]) => {
-    return new Promise<[string, HTMLImageElement]>((resolve, reject) => {
+    return new Promise<[string, HTMLImageElement]>((resolve) => {
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.src = url;
@@ -61,14 +57,11 @@ export async function loadBrandAssets(): Promise<Record<string, HTMLImageElement
   return brandImages;
 }
 
-/**
- * Preload required custom fonts for canvas drawing using document.fonts
- */
 export async function ensureFontsLoaded(): Promise<boolean> {
   if (typeof window === "undefined" || !document.fonts) return true;
   try {
     await Promise.all([
-      document.fonts.load("bold 46px Syne"),
+      document.fonts.load("bold 130px 'Bodoni Moda'"),
       document.fonts.load("bold 24px 'JetBrains Mono'"),
       document.fonts.load("18px 'JetBrains Mono'"),
     ]);
@@ -80,172 +73,11 @@ export async function ensureFontsLoaded(): Promise<boolean> {
 }
 
 /* ============================================================================
- * VECTOR LINE-ART DECORATIONS (Gold #FEE101 Stroke, No Fill)
+ * CANVAS COMPOSITING LAYERS - THE OFFICIAL BRAND DESIGN
  * ============================================================================ */
 
-/**
- * Draw Gold Corner Flourish
- */
-function drawCornerFlourish(ctx: CanvasRenderingContext2D, cx: number, cy: number, flipX: number, flipY: number) {
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.scale(flipX, flipY);
-
-  ctx.strokeStyle = "#FEE101";
-  ctx.lineWidth = 2;
-
-  ctx.beginPath();
-  ctx.moveTo(10, 48);
-  ctx.bezierCurveTo(10, 20, 20, 10, 48, 10);
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.arc(32, 32, 14, Math.PI, 1.5 * Math.PI, false);
-  ctx.stroke();
-
-  ctx.fillStyle = "#FEE101";
-  ctx.beginPath();
-  ctx.arc(22, 22, 3, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.restore();
-}
-
-/**
- * Draw Gold Palm Leaf Frond Line Art
- */
-function drawPalmFrond(ctx: CanvasRenderingContext2D, cx: number, cy: number, flipX: number) {
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.scale(flipX, 1);
-
-  ctx.strokeStyle = "#FEE101";
-  ctx.lineWidth = 2;
-
-  // Main stem curve
-  ctx.beginPath();
-  ctx.moveTo(0, 30);
-  ctx.quadraticCurveTo(20, -10, 45, -35);
-  ctx.stroke();
-
-  // Leaf fronds
-  const fronds = [
-    { sx: 10, sy: 15, ex: 28, ey: -2 },
-    { sx: 20, sy: 2, ex: 38, ey: -16 },
-    { sx: 30, sy: -12, ex: 48, ey: -28 },
-  ];
-
-  fronds.forEach(f => {
-    ctx.beginPath();
-    ctx.moveTo(f.sx, f.sy);
-    ctx.quadraticCurveTo(f.sx + 10, f.sy - 15, f.ex, f.ey);
-    ctx.stroke();
-  });
-
-  ctx.restore();
-}
-
-/**
- * Draw Gold Ocean Wave Lines Accent
- */
-function drawWaveLine(ctx: CanvasRenderingContext2D, x: number, y: number, w: number) {
-  ctx.save();
-  ctx.strokeStyle = "#FEE101";
-  ctx.lineWidth = 1.5;
-
-  const steps = 4;
-  const stepW = w / steps;
-
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-  for (let i = 0; i < steps; i++) {
-    const curX = x + i * stepW;
-    ctx.quadraticCurveTo(curX + stepW / 4, y - 6, curX + stepW / 2, y);
-    ctx.quadraticCurveTo(curX + (3 * stepW) / 4, y + 6, curX + stepW, y);
-  }
-  ctx.stroke();
-  ctx.restore();
-}
-
-/**
- * Draw Gold Sun Sparkle Icon
- */
-function drawSunSparkle(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
-  ctx.save();
-  ctx.strokeStyle = "#FEE101";
-  ctx.lineWidth = 2;
-
-  // 4-point star sparkle
-  ctx.beginPath();
-  ctx.moveTo(cx, cy - 12);
-  ctx.quadraticCurveTo(cx, cy, cx + 12, cy);
-  ctx.quadraticCurveTo(cx, cy, cx, cy + 12);
-  ctx.quadraticCurveTo(cx, cy, cx - 12, cy);
-  ctx.quadraticCurveTo(cx, cy, cx, cy - 12);
-  ctx.stroke();
-
-  ctx.restore();
-}
-
-/**
- * Draw Rocket Icon (for SHIPPING field)
- */
-function drawRocketIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
-  ctx.save();
-  ctx.strokeStyle = "#FEE101";
-  ctx.lineWidth = 2;
-
-  ctx.beginPath();
-  ctx.moveTo(cx, cy - 10);
-  ctx.quadraticCurveTo(cx + 8, cy - 4, cx + 8, cy + 6);
-  ctx.lineTo(cx - 8, cy + 6);
-  ctx.quadraticCurveTo(cx - 8, cy - 4, cx, cy - 10);
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.arc(cx, cy, 3, 0, Math.PI * 2);
-  ctx.stroke();
-
-  ctx.restore();
-}
-
-/**
- * Draw Coffee Cup Icon (for RUNS ON field)
- */
-function drawCoffeeCupIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
-  ctx.save();
-  ctx.strokeStyle = "#FEE101";
-  ctx.lineWidth = 2;
-
-  // Cup body
-  ctx.beginPath();
-  ctx.roundRect(cx - 9, cy - 6, 18, 14, [0, 0, 5, 5]);
-  ctx.stroke();
-
-  // Cup handle
-  ctx.beginPath();
-  ctx.arc(cx + 10, cy + 1, 4, -Math.PI / 2, Math.PI / 2);
-  ctx.stroke();
-
-  // Steam lines
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(cx - 4, cy - 10); ctx.lineTo(cx - 4, cy - 14);
-  ctx.moveTo(cx + 4, cy - 10); ctx.lineTo(cx + 4, cy - 14);
-  ctx.stroke();
-
-  ctx.restore();
-}
-
-/* ============================================================================
- * CANVAS COMPOSITING LAYERS
- * ============================================================================ */
-
-/**
- * Render Layer 1: Base Card Background & Gold Vector Decorations
- */
-export function renderLayer1Background(mode: "single" | "squad", cardTheme: "light" | "dark" = "dark"): HTMLCanvasElement {
-  const cacheKey = `${mode}:${cardTheme}`;
+export function renderLayer1Background(mode: "single" | "squad"): HTMLCanvasElement {
+  const cacheKey = `official-brand-${mode}`;
   if (cachedLayer1Canvas && cachedLayer1Canvas.dataset.cacheKey === cacheKey) {
     return cachedLayer1Canvas;
   }
@@ -257,98 +89,102 @@ export function renderLayer1Background(mode: "single" | "squad", cardTheme: "lig
   const ctx = canvas.getContext("2d");
   if (!ctx) return canvas;
 
-  const bgColor = "#052414";
+  const bgColor = "#0B6B3F";
   const goldColor = "#FEE101";
+  const blackColor = "#000000";
 
   // 1. Deep Forest Green Base Background
   ctx.fillStyle = bgColor;
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-  // Tone-on-Tone Tropical Background Texture (~5% opacity)
-  if (brandImages.sunRise && brandImages.sunRise.complete && brandImages.sunRise.naturalWidth > 0) {
-    ctx.save();
-    ctx.globalAlpha = 0.06;
-    ctx.drawImage(brandImages.sunRise, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    ctx.restore();
+  // 2. Thick Gold Perimeter Frame
+  const frameInset = 32;
+  ctx.strokeStyle = goldColor;
+  ctx.lineWidth = 12;
+  ctx.beginPath();
+  ctx.rect(frameInset, frameInset, CANVAS_WIDTH - frameInset * 2, CANVAS_HEIGHT - frameInset * 2);
+  ctx.stroke();
+
+  // Draw inner thin line
+  ctx.strokeStyle = goldColor;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.rect(frameInset + 16, frameInset + 16, CANVAS_WIDTH - (frameInset + 16) * 2, CANVAS_HEIGHT - (frameInset + 16) * 2);
+  ctx.stroke();
+
+  // 3. TOP LOGO (Using official image assets)
+  let currentY = 80;
+
+  if (brandImages.hackerHouse) {
+    const hhImg = brandImages.hackerHouse;
+    // Scale image to fit within width (max 800px)
+    const imgW = Math.min(840, hhImg.width);
+    const imgH = (hhImg.height / hhImg.width) * imgW;
+    const imgX = (CANVAS_WIDTH - imgW) / 2;
+
+    // Draw HACKER HOUSE logo
+    ctx.drawImage(hhImg, imgX, currentY, imgW, imgH);
+
+    // Draw GOA HINDI SVG over it
+    if (brandImages.goaHindi) {
+      const goaImg = brandImages.goaHindi;
+      const goaW = 320;
+      const goaH = (goaImg.height / goaImg.width) * goaW;
+      // Position it exactly where it looks good (centered, slightly overlapping HACKER HOUSE)
+      const goaX = (CANVAS_WIDTH - goaW) / 2;
+      const goaY = currentY - 10;
+
+      // Slight tilt for pop art feel
+      ctx.save();
+      ctx.translate(goaX + goaW / 2, goaY + goaH / 2);
+      ctx.rotate(-0.04);
+      ctx.drawImage(goaImg, -goaW / 2, -goaH / 2, goaW, goaH);
+      ctx.restore();
+    }
   }
 
-  // 2. SINGLE GOLD PERIMETER BORDER
-  ctx.strokeStyle = goldColor;
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.roundRect(28, 28, CANVAS_WIDTH - 56, CANVAS_HEIGHT - 56, 14);
-  ctx.stroke();
-
-  // 3. ELEGANT GOLD CORNER FLOURISHES
-  drawCornerFlourish(ctx, 42, 42, 1, 1);
-  drawCornerFlourish(ctx, CANVAS_WIDTH - 42, 42, -1, 1);
-  drawCornerFlourish(ctx, 42, CANVAS_HEIGHT - 42, 1, -1);
-  drawCornerFlourish(ctx, CANVAS_WIDTH - 42, CANVAS_HEIGHT - 42, -1, -1);
-
-  // 4. TOP HEADER BRANDING (Generous Breathing Room / Top Margin)
-  let currentY = 95;
-
-  // Location Tag + Flanking Gold Palm Leaf Fronds
-  drawPalmFrond(ctx, 160, currentY - 5, 1);
-  drawPalmFrond(ctx, CANVAS_WIDTH - 160, currentY - 5, -1);
-
+  // 4. Subtitle Date Line
+  currentY += 190;
   ctx.fillStyle = goldColor;
-  ctx.font = "bold 20px 'JetBrains Mono', monospace";
-  ctx.textAlign = "center";
-  ctx.fillText("+ GOA, INDIA +", CANVAS_WIDTH / 2, currentY);
-
-  currentY += 62;
-
-  // Headline Display Serif Wordmark: "HACKER HOUSE"
-  ctx.font = "900 60px Syne, sans-serif";
-  ctx.fillText("HACKER HOUSE", CANVAS_WIDTH / 2, currentY);
-
-  currentY += 44;
-
-  // Subtitle Date Line + Flanking Sun Sparkles
-  drawSunSparkle(ctx, CANVAS_WIDTH / 2 - 210, currentY - 6);
-  drawSunSparkle(ctx, CANVAS_WIDTH / 2 + 210, currentY - 6);
-
-  ctx.font = "bold 18px 'JetBrains Mono', monospace";
-  ctx.fillText("BUILDER ID  ·  28 – 31 OCT 2026", CANVAS_WIDTH / 2, currentY);
-
-  // 5. PHOTO FRAME BOUNDING BOX (Centered Passport Format: 400px x 400px, Y: 230px to 630px)
-  const photoW = 400;
-  const photoH = 400;
-  const photoX = (CANVAS_WIDTH - photoW) / 2; // 340
-  const photoY = 230;
-
-  // Flanking Ocean Wave Accent Lines
-  drawWaveLine(ctx, 60, photoY + photoH / 2, 180);
-  drawWaveLine(ctx, CANVAS_WIDTH - 240, photoY + photoH / 2, 180);
-
-  // Gold Frame Border around photo area
-  ctx.strokeStyle = goldColor;
-  ctx.lineWidth = 2.5;
-  ctx.beginPath();
-  ctx.roundRect(photoX, photoY, photoW, photoH, 10);
-  ctx.stroke();
+  ctx.font = "bold 16px 'JetBrains Mono', monospace";
+  ctx.textAlign = "left";
+  ctx.fillText("GOA, INDIA  ·  28 – 31 OCT 2026", 80, currentY);
+  ctx.textAlign = "right";
+  ctx.fillText("2:47 PM STUDIO", CANVAS_WIDTH - 80, currentY);
 
   cachedLayer1Canvas = canvas;
   return canvas;
 }
 
-/**
- * Render Layer 2: Photo Layer (Passport Portrait Format)
- */
-export function drawPhotoLayer(
+export function drawPhotoLayerWithShadow(
   ctx: CanvasRenderingContext2D,
   cardData: CardData
 ) {
-  const photoW = 400;
-  const photoH = 400;
-  const photoX = (CANVAS_WIDTH - photoW) / 2; // 340
-  const photoY = 230;
+  let photoW = 480;
+  let photoH = 480;
+  let photoY = 320;
+
+  if (cardData.mode === "squad") {
+    photoW = 760;
+    photoH = 500;
+  }
+
+  const photoX = (CANVAS_WIDTH - photoW) / 2;
+  const blackColor = "#000000";
+  const pinkColor = "#FF007F";
   const goldColor = "#FEE101";
+
+  // Drop shadow for photo box
+  ctx.fillStyle = blackColor;
+  ctx.fillRect(photoX + 16, photoY + 16, photoW, photoH);
+
+  // Photo Area Background (Pink for Single, Gold for Squad)
+  ctx.fillStyle = cardData.mode === "single" ? pinkColor : goldColor;
+  ctx.fillRect(photoX, photoY, photoW, photoH);
 
   ctx.save();
   ctx.beginPath();
-  ctx.roundRect(photoX, photoY, photoW, photoH, 10);
+  ctx.rect(photoX, photoY, photoW, photoH);
   ctx.clip();
 
   if (cardData.mode === "single") {
@@ -361,18 +197,19 @@ export function drawPhotoLayer(
   } else {
     drawSquadPhotos(ctx, cardData.photos, photoX, photoY, photoW, photoH);
   }
+  ctx.restore();
 
-  // Gold stroke
-  ctx.strokeStyle = goldColor;
-  ctx.lineWidth = 2;
+  // Solid black outline around the photo box
+  ctx.strokeStyle = blackColor;
+  ctx.lineWidth = 12;
   ctx.strokeRect(photoX, photoY, photoW, photoH);
 
-  ctx.restore();
+  // Inner border
+  ctx.strokeStyle = cardData.mode === "single" ? pinkColor : goldColor;
+  ctx.lineWidth = 4;
+  ctx.strokeRect(photoX + 6, photoY + 6, photoW - 12, photoH - 12);
 }
 
-/**
- * Cover Crop math + position translation for a photo
- */
 function drawSinglePhoto(
   ctx: CanvasRenderingContext2D,
   img: ImageBitmap | HTMLImageElement,
@@ -409,9 +246,6 @@ function drawSinglePhoto(
   ctx.drawImage(img, finalX, finalY, renderW, renderH);
 }
 
-/**
- * Squad Mode Photo Layout (2 to 4 photos in grid frame)
- */
 function drawSquadPhotos(
   ctx: CanvasRenderingContext2D,
   photos: PhotoCropState[],
@@ -420,28 +254,42 @@ function drawSquadPhotos(
   w: number,
   h: number
 ) {
-  const count = Math.min(Math.max(photos.length, 2), 4);
-  const goldColor = "#FEE101";
+  const count = photos.length;
+  const pinkColor = "#FF007F";
+  const blackColor = "#000000";
 
-  ctx.fillStyle = "#052414";
+  ctx.fillStyle = pinkColor;
   ctx.fillRect(x, y, w, h);
 
   let grid: { x: number; y: number; w: number; h: number; name: string }[] = [];
 
+  const padding = 16;
+  const strokeW = 6;
+
   if (count === 2) {
-    const subW = (w - 8) / 2;
+    const subW = (w - padding * 3) / 2;
+    const subH = h - padding * 2;
     grid = [
-      { x: x, y: y, w: subW, h: h, name: photos[0]?.name || "BUILDER 1" },
-      { x: x + subW + 8, y: y, w: subW, h: h, name: photos[1]?.name || "BUILDER 2" },
+      { x: x + padding, y: y + padding, w: subW, h: subH, name: photos[0]?.name || "BUILDER 1" },
+      { x: x + subW + padding * 2, y: y + padding, w: subW, h: subH, name: photos[1]?.name || "BUILDER 2" },
+    ];
+  } else if (count === 3) {
+    const subW = (w - padding * 3) / 2;
+    const subH = (h - padding * 3) / 2;
+    grid = [
+      { x: x + padding, y: y + padding, w: subW, h: subH, name: photos[0]?.name || "BUILDER 1" },
+      { x: x + subW + padding * 2, y: y + padding, w: subW, h: subH, name: photos[1]?.name || "BUILDER 2" },
+      // Center the 3rd one on the bottom
+      { x: x + (w - subW) / 2, y: y + subH + padding * 2, w: subW, h: subH, name: photos[2]?.name || "BUILDER 3" },
     ];
   } else {
-    const subW = (w - 8) / 2;
-    const subH = (h - 8) / 2;
+    const subW = (w - padding * 3) / 2;
+    const subH = (h - padding * 3) / 2;
     grid = [
-      { x: x, y: y, w: subW, h: subH, name: photos[0]?.name || "BUILDER 1" },
-      { x: x + subW + 8, y: y, w: subW, h: subH, name: photos[1]?.name || "BUILDER 2" },
-      { x: x, y: y + subH + 8, w: subW, h: subH, name: photos[2]?.name || "BUILDER 3" },
-      { x: x + subW + 8, y: y + subH + 8, w: subW, h: subH, name: photos[3]?.name || "BUILDER 4" },
+      { x: x + padding, y: y + padding, w: subW, h: subH, name: photos[0]?.name || "BUILDER 1" },
+      { x: x + subW + padding * 2, y: y + padding, w: subW, h: subH, name: photos[1]?.name || "BUILDER 2" },
+      { x: x + padding, y: y + subH + padding * 2, w: subW, h: subH, name: photos[2]?.name || "BUILDER 3" },
+      { x: x + subW + padding * 2, y: y + subH + padding * 2, w: subW, h: subH, name: photos[3]?.name || "BUILDER 4" },
     ];
   }
 
@@ -458,26 +306,30 @@ function drawSquadPhotos(
       drawPlaceholderPhoto(ctx, cell.x, cell.y, cell.w, cell.h);
     }
 
-    ctx.strokeStyle = goldColor;
-    ctx.lineWidth = 2;
+    ctx.restore();
+
+    // Black stroke around individual squad cell
+    ctx.strokeStyle = blackColor;
+    ctx.lineWidth = strokeW;
     ctx.strokeRect(cell.x, cell.y, cell.w, cell.h);
 
-    ctx.fillStyle = "#052414";
-    ctx.fillRect(cell.x, cell.y + cell.h - 28, cell.w, 28);
+    // Name tag at bottom of cell
+    const labelH = 32;
+    ctx.fillStyle = "#FEE101";
+    ctx.fillRect(cell.x, cell.y + cell.h - labelH, cell.w, labelH);
+    ctx.beginPath();
+    ctx.moveTo(cell.x, cell.y + cell.h - labelH);
+    ctx.lineTo(cell.x + cell.w, cell.y + cell.h - labelH);
+    ctx.stroke();
 
-    ctx.fillStyle = goldColor;
-    ctx.font = "bold 12px 'JetBrains Mono', monospace";
+    ctx.fillStyle = blackColor;
+    ctx.font = "bold 14px 'JetBrains Mono', monospace";
     ctx.textAlign = "center";
-    ctx.fillText(cell.name.toUpperCase(), cell.x + cell.w / 2, cell.y + cell.h - 8);
+    ctx.fillText(cell.name.toUpperCase(), cell.x + cell.w / 2, cell.y + cell.h - 10);
     ctx.textAlign = "left";
-
-    ctx.restore();
   });
 }
 
-/**
- * Gold Upload Placeholder
- */
 function drawPlaceholderPhoto(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -485,53 +337,45 @@ function drawPlaceholderPhoto(
   w: number,
   h: number
 ) {
-  const goldColor = "#FEE101";
+  const pinkColor = "#FF007F";
+  const blackColor = "#000000";
 
-  ctx.fillStyle = "#052414";
+  ctx.fillStyle = pinkColor;
   ctx.fillRect(x, y, w, h);
-
-  ctx.save();
-  ctx.strokeStyle = goldColor;
-  ctx.lineWidth = 2;
-  ctx.setLineDash([8, 6]);
-  ctx.strokeRect(x + 12, y + 12, w - 24, h - 24);
-  ctx.restore();
 
   const cx = x + w / 2;
   const cy = y + h / 2 - 14;
 
-  ctx.strokeStyle = goldColor;
-  ctx.lineWidth = 3;
+  ctx.strokeStyle = blackColor;
+  ctx.lineWidth = 4;
   ctx.beginPath();
-  ctx.roundRect(cx - 24, cy - 16, 48, 36, 6);
+  ctx.roundRect(cx - 30, cy - 20, 60, 40, 8);
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.arc(cx, cy + 2, 10, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 12, 0, Math.PI * 2);
   ctx.stroke();
 
-  ctx.fillStyle = goldColor;
-  ctx.font = "bold 15px 'JetBrains Mono', monospace";
+  ctx.fillStyle = blackColor;
+  ctx.font = "bold 18px 'JetBrains Mono', monospace";
   ctx.textAlign = "center";
-  ctx.fillText("UPLOAD BUILDER PHOTO", cx, cy + 50);
+  ctx.fillText("UPLOAD PHOTO", cx, cy + 50);
 
-  ctx.font = "12px 'JetBrains Mono', monospace";
-  ctx.fillText("TAP OR DRAG PHOTO HERE", cx, cy + 72);
+  ctx.font = "14px 'JetBrains Mono', monospace";
+  ctx.fillText("TAP OR DRAG HERE", cx, cy + 72);
   ctx.textAlign = "left";
 }
 
-/**
- * Render Layer 3: Clean Typography & Expanded Structured Content
- * (Guaranteed NO Collision: Photo bottom is 630px, Name starts at 675px -> 45px gap)
- */
 export function drawTextLayer(
   ctx: CanvasRenderingContext2D,
   cardData: CardData
 ) {
+  const blackColor = "#000000";
+  const pinkColor = "#FF007F";
   const goldColor = "#FEE101";
-  
-  // GUARANTEED GAP BELOW PHOTO FRAME (Photo bottom: 630px, Name Y: 675px)
-  let currentY = 675;
+  const bgColor = "#0B6B3F";
+
+  let currentY = cardData.mode === "single" ? 880 : 900;
 
   const nameText = (cardData.name || "BUILDER NAME").toUpperCase();
   const titleText = `[ ${cardData.builderTitle || "PROTOCOL VANGUARD"} ]`.toUpperCase();
@@ -540,90 +384,115 @@ export function drawTextLayer(
   const stackText = (cardData.stack || "FULL-STACK / RUST / SOLANA / AI").toUpperCase();
   const serialId = cardData.nodeId || `HHG26-${Math.floor(1000 + Math.random() * 9000)}`;
 
-  // 1. BUILDER NAME — Dynamic measure-and-shrink loop (Default font size 46px, down ~20%)
-  ctx.font = "900 46px Syne, sans-serif";
-  let fontSize = 46;
-  const maxNameW = 820;
+  // 1. BUILDER NAME (or TEAM NAME for squad)
+  const displayName = cardData.mode === "squad" && cardData.teamName ? cardData.teamName.trim().toUpperCase() : nameText;
 
-  while (ctx.measureText(nameText).width > maxNameW && fontSize > 20) {
+  ctx.font = "bold 70px 'Bodoni Moda', serif";
+  let fontSize = 70;
+  const maxNameW = 860;
+
+  while (ctx.measureText(displayName).width > maxNameW && fontSize > 24) {
     fontSize -= 2;
-    ctx.font = `900 ${fontSize}px Syne, sans-serif`;
+    ctx.font = `bold ${fontSize}px 'Bodoni Moda', serif`;
   }
 
+  // Draw name with a black stroke and gold fill for a 3D pop effect
   ctx.fillStyle = goldColor;
+  ctx.strokeStyle = blackColor;
+  ctx.lineWidth = 12;
   ctx.textAlign = "center";
-  ctx.fillText(nameText, CANVAS_WIDTH / 2, currentY);
+  ctx.strokeText(displayName, CANVAS_WIDTH / 2, currentY);
+  ctx.fillText(displayName, CANVAS_WIDTH / 2, currentY);
 
-  currentY += 56;
+  currentY += 80;
 
-  // 2. BUILDER CLASS TITLE (Gold Pill Container)
-  ctx.font = "bold 20px 'JetBrains Mono', monospace";
-  const titleW = Math.min(ctx.measureText(titleText).width + 40, 880);
+  // 2. BUILDER CLASS TITLE (Pink Pill Container)
+  ctx.font = "bold 26px 'JetBrains Mono', monospace";
+  const titleW = Math.min(ctx.measureText(titleText).width + 60, 860);
 
-  ctx.fillStyle = "#052414";
-  ctx.strokeStyle = goldColor;
-  ctx.lineWidth = 2;
+  // Drop shadow
+  ctx.fillStyle = blackColor;
   ctx.beginPath();
-  ctx.roundRect((CANVAS_WIDTH - titleW) / 2, currentY, titleW, 42, 8);
+  ctx.roundRect((CANVAS_WIDTH - titleW) / 2 + 6, currentY + 6, titleW, 54, 8);
+  ctx.fill();
+
+  // Pill
+  ctx.fillStyle = pinkColor;
+  ctx.strokeStyle = blackColor;
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.roundRect((CANVAS_WIDTH - titleW) / 2, currentY, titleW, 54, 8);
   ctx.fill();
   ctx.stroke();
 
-  ctx.fillStyle = goldColor;
-  ctx.fillText(titleText, CANVAS_WIDTH / 2, currentY + 28);
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillText(titleText, CANVAS_WIDTH / 2, currentY + 36);
 
-  currentY += 66;
+  currentY += 100;
 
-  // 3. EXPANDED FIELD 1: "SHIPPING" / "CURRENTLY BUILDING" (Gold Rocket Icon + Label + Value)
-  drawRocketIcon(ctx, CANVAS_WIDTH / 2 - 280, currentY + 12);
-  ctx.font = "bold 15px 'JetBrains Mono', monospace";
-  ctx.fillText(`SHIPPING:  ${shippingText}`, CANVAS_WIDTH / 2, currentY + 16);
-
-  currentY += 42;
-
-  // 4. EXPANDED FIELD 2: "FUEL" / "RUNS ON" (Gold Coffee Cup Icon + Label + Value)
-  drawCoffeeCupIcon(ctx, CANVAS_WIDTH / 2 - 280, currentY + 12);
-  ctx.font = "bold 15px 'JetBrains Mono', monospace";
-  ctx.fillText(`FUEL:  ${runsOnText}`, CANVAS_WIDTH / 2, currentY + 16);
-
-  currentY += 42;
-
-  // 5. TEAM NAME FIELD (if specified)
-  if (cardData.teamName && cardData.teamName.trim().length > 0) {
-    const teamText = `TEAM:  ${cardData.teamName.trim().toUpperCase()}`;
-    ctx.font = "bold 16px 'JetBrains Mono', monospace";
-    ctx.fillText(teamText, CANVAS_WIDTH / 2, currentY + 16);
-    currentY += 40;
-  }
-
-  // 6. TECHNICAL STACK / ROLE TAGLINE
-  ctx.font = "bold 16px 'JetBrains Mono', monospace";
-  ctx.fillText(`STACK:  ${stackText}`, CANVAS_WIDTH / 2, currentY + 16);
-
-  currentY += 50;
-
-  // 7. THIN GOLD DOTTED DIVIDER LINE
-  ctx.save();
+  // Data fields mapping
+  ctx.lineWidth = 2;
   ctx.strokeStyle = goldColor;
-  ctx.lineWidth = 1.5;
-  ctx.setLineDash([4, 6]);
+
+  const drawDataField = (label: string, value: string, y: number) => {
+    // Background highlight for data fields
+    ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+    ctx.fillRect(80, y - 36, CANVAS_WIDTH - 160, 50);
+
+    ctx.fillStyle = goldColor;
+    ctx.font = "bold 24px 'JetBrains Mono', monospace";
+    ctx.textAlign = "left";
+    ctx.fillText(label, 100, y);
+
+    ctx.font = "bold 26px 'JetBrains Mono', monospace";
+    ctx.textAlign = "right";
+    ctx.fillText(value, CANVAS_WIDTH - 100, y);
+  };
+
+  const teamText = (cardData.teamName || "LONE WOLF").toUpperCase();
+
+  // 2.5 TEAM
+  drawDataField("TEAM:", teamText, currentY);
+  currentY += 60;
+
+  // 3. SHIPPING
+  drawDataField("SHIPPING:", shippingText, currentY);
+  currentY += 60;
+
+  // 4. FUEL
+  drawDataField("FUEL:", runsOnText, currentY);
+  currentY += 60;
+
+  // 5. STACK
+  drawDataField("STACK:", stackText, currentY);
+  currentY += 60;
+
+  // 6. BARCODE / FOOTER
+  currentY += 40;
+  ctx.fillStyle = blackColor;
+  ctx.textAlign = "center";
+
+  // Fake barcode lines (Gold on Green)
+  const barcodeY = currentY;
+  const barcodeW = 400;
+  const barcodeH = 40;
+  const barcodeX = (CANVAS_WIDTH - barcodeW) / 2;
+
+  ctx.fillStyle = goldColor;
   ctx.beginPath();
-  ctx.moveTo(140, currentY);
-  ctx.lineTo(CANVAS_WIDTH - 140, currentY);
-  ctx.stroke();
-  ctx.restore();
+  for (let i = 0; i < barcodeW; i += Math.random() * 8 + 2) {
+    const w = Math.random() * 4 + 1;
+    ctx.rect(barcodeX + i, barcodeY, w, barcodeH);
+  }
+  ctx.fill();
 
-  currentY += 42;
-
-  // 8. SINGLE CLEAN FOOTER LINE (Essential Metadata in Small Caps Gold Text)
-  ctx.font = "bold 16px 'JetBrains Mono', monospace";
-  ctx.fillText(`HACKER HOUSE GOA 2026   ·   ID: ${serialId}   ·   #FRAMEINGOA`, CANVAS_WIDTH / 2, currentY);
+  currentY += 60;
+  ctx.font = "bold 14px 'JetBrains Mono', monospace";
+  ctx.fillText(`ID: ${serialId}  |  #FRAMEINGOA`, CANVAS_WIDTH / 2, currentY);
 
   ctx.textAlign = "left";
 }
 
-/**
- * Main Compositing Engine
- */
 export function compositeFullCard(
   targetCanvas: HTMLCanvasElement,
   cardData: CardData
@@ -635,12 +504,12 @@ export function compositeFullCard(
   targetCanvas.height = CANVAS_HEIGHT;
 
   // 1. Base Layer
-  const l1Canvas = renderLayer1Background(cardData.mode, cardData.cardTheme || "dark");
+  const l1Canvas = renderLayer1Background(cardData.mode);
   ctx.drawImage(l1Canvas, 0, 0);
 
   // 2. Photo Layer
-  drawPhotoLayer(ctx, cardData);
+  drawPhotoLayerWithShadow(ctx, cardData);
 
-  // 3. Typography & Expanded Content Layer
+  // 3. Typography Layer (Data fields)
   drawTextLayer(ctx, cardData);
 }

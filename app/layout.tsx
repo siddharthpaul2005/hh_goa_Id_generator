@@ -1,6 +1,20 @@
 import type { Metadata } from "next";
-import { Syne, JetBrains_Mono } from "next/font/google";
+import { Syne, JetBrains_Mono, Bodoni_Moda, Noto_Sans_Devanagari, VT323, Permanent_Marker } from "next/font/google";
 import "./globals.css";
+
+const vt323 = VT323({
+  subsets: ["latin"],
+  variable: "--font-vt323",
+  weight: ["400"],
+  display: "swap",
+});
+
+const permanentMarker = Permanent_Marker({
+  subsets: ["latin"],
+  variable: "--font-permanent-marker",
+  weight: ["400"],
+  display: "swap",
+});
 
 const syne = Syne({
   subsets: ["latin"],
@@ -12,7 +26,22 @@ const syne = Syne({
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-jetbrains-mono",
-  weight: ["400", "500", "700"],
+  weight: ["400", "500", "700", "800"],
+  display: "swap",
+});
+
+const bodoni = Bodoni_Moda({
+  subsets: ["latin"],
+  variable: "--font-bodoni",
+  weight: ["700", "900"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
+const notoSansDevanagari = Noto_Sans_Devanagari({
+  subsets: ["devanagari"],
+  variable: "--font-noto-devanagari",
+  weight: ["700", "900"],
   display: "swap",
 });
 
@@ -50,7 +79,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${syne.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" className={`${syne.variable} ${jetbrainsMono.variable} ${bodoni.variable} ${notoSansDevanagari.variable} ${vt323.variable} ${permanentMarker.variable}`}>
       <body className="bg-[#05080A] text-white min-h-screen antialiased selection:bg-hh-orange selection:text-white">
         {children}
       </body>

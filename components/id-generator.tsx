@@ -14,8 +14,6 @@ import {
   Check,
   Zap,
   Stamp,
-  Sun,
-  Moon,
   Rocket,
   Coffee
 } from "lucide-react";
@@ -31,15 +29,9 @@ import {
 import { generateBuilderTitle } from "@/lib/builder-titles";
 import { convertHeicToJpeg } from "@/lib/heic-converter";
 
-interface IdGeneratorProps {
-  globalTheme: "dark" | "light";
-  onToggleGlobalTheme: () => void;
-}
-
-export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGeneratorProps) {
+export default function IdGenerator() {
   // State
   const [mode, setMode] = useState<"single" | "squad">("single");
-  const [cardTheme, setCardTheme] = useState<"light" | "dark">("dark");
   const [name, setName] = useState("");
   const [teamName, setTeamName] = useState("");
   const [shipping, setShipping] = useState("Solana DEX & AI Agents");
@@ -57,11 +49,6 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
   const [isUploading, setIsUploading] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  // Sync card theme with global theme by default
-  useEffect(() => {
-    setCardTheme(globalTheme);
-  }, [globalTheme]);
 
   // Canvas & Container Refs
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -111,7 +98,7 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
     rafIdRef.current = requestAnimationFrame(() => {
       const cardData: CardData = {
         mode,
-        cardTheme,
+        cardTheme: "dark", // Hardcode for compatibility or remove later
         photos,
         name,
         teamName,
@@ -129,13 +116,13 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
         compositeFullCard(exportCanvasRef.current, cardData);
       }
     });
-  }, [mode, cardTheme, photos, name, teamName, shipping, runsOn, stack, builderTitle]);
+  }, [mode, photos, name, teamName, shipping, runsOn, stack, builderTitle]);
 
   useEffect(() => {
     if (!isAssetsLoading) {
       triggerRedraw();
     }
-  }, [isAssetsLoading, mode, cardTheme, photos, name, teamName, shipping, runsOn, stack, builderTitle, triggerRedraw]);
+  }, [isAssetsLoading, triggerRedraw]);
 
   // 5. Image File Handler
   const processImageFile = async (file: File, targetIdx: number) => {
@@ -208,8 +195,8 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
       const cur = next[activePhotoIdx] || { image: null, cropX: 0, cropY: 0, scale: 1 };
       next[activePhotoIdx] = {
         ...cur,
-        cropX: cur.cropX + dx * scaleFactorX * 1.5,
-        cropY: cur.cropY + dy * scaleFactorY * 1.5,
+        cropX: cur.cropX + dx * scaleFactorX,
+        cropY: cur.cropY + dy * scaleFactorY,
       };
       return next;
     });
@@ -342,14 +329,12 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
     }
   };
 
-  const isDarkSite = globalTheme === "dark";
-
   return (
-    <div className="w-full max-w-5xl mx-auto flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 p-3 md:p-6 font-mono stagger-2">
+    <div className="w-full max-w-5xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-10 p-2 font-mono stagger-2 text-black">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className={`fixed top-6 right-6 z-50 ${isDarkSite ? "bg-[#0A3D24] border-2 border-[#00FF88] text-[#00FF88]" : "bg-[#FFFBE8] border-2 border-[#0B6839] text-[#0B6839]"} text-xs px-4 py-3 rounded shadow-[4px_4px_0px_#000000] flex items-center gap-2.5 animate-bounce font-mono font-bold`}>
-          <Zap className="w-4 h-4 text-[#FF3B77]" />
+        <div className="fixed top-6 right-6 z-50 hh-panel-pink text-xs px-4 py-3 rounded shadow-[4px_4px_0px_#000000] flex items-center gap-2.5 animate-bounce font-mono font-bold">
+          <Zap className="w-4 h-4 text-white" />
           <span>[ {toastMessage} ]</span>
         </div>
       )}
@@ -374,15 +359,15 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
 
       {/* LEFT COLUMN: Live Canvas Preview */}
       <div className="w-full lg:w-1/2 flex flex-col items-center gap-3">
-        {/* Toggles Bar: Mode Selector & Card Theme Switcher */}
-        <div className="w-full max-w-md flex flex-col sm:flex-row gap-2">
+        {/* Toggles Bar: Mode Selector */}
+        <div className="w-full max-w-md flex gap-2">
           {/* Mode Switcher Tabs */}
-          <div className={`flex-1 grid grid-cols-2 p-1 rounded border-2 ${isDarkSite ? "bg-[#062B19] border-[#00FF88]" : "bg-[#F4EFE2] border-[#0B6839]"}`}>
+          <div className="flex-1 grid grid-cols-2 p-1 rounded border-2 bg-[var(--panel-alt-bg)] border-black">
             <button
               onClick={() => handleModeChange("single")}
               className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 ${mode === "single"
                   ? "tab-hh-active"
-                  : "tab-hh-inactive hover:bg-white/10"
+                  : "tab-hh-inactive hover:bg-black/10"
                 }`}
             >
               <User className="w-3.5 h-3.5" />
@@ -392,57 +377,33 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
               onClick={() => handleModeChange("squad")}
               className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 ${mode === "squad"
                   ? "tab-hh-active"
-                  : "tab-hh-inactive hover:bg-white/10"
+                  : "tab-hh-inactive hover:bg-black/10"
                 }`}
             >
               <Users className="w-3.5 h-3.5" />
               <span>SQUAD FRAME</span>
             </button>
           </div>
-
-          {/* Card Theme Switcher */}
-          <div className={`grid grid-cols-2 p-1 rounded border-2 ${isDarkSite ? "bg-[#062B19] border-[#00FF88]" : "bg-[#F4EFE2] border-[#0B6839]"}`}>
-            <button
-              onClick={() => setCardTheme("dark")}
-              className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1 ${cardTheme === "dark"
-                  ? "bg-[#051F14] text-[#00FF88] border border-[#00FF88] shadow-[2px_2px_0px_#000000]"
-                  : "text-current hover:bg-white/10"
-                }`}
-            >
-              <Moon className="w-3 h-3 text-[#FF3B77]" />
-              <span>DARK</span>
-            </button>
-            <button
-              onClick={() => setCardTheme("light")}
-              className={`py-1.5 px-2 rounded text-[11px] font-bold transition-all flex items-center justify-center gap-1 ${cardTheme === "light"
-                  ? "bg-[#FFFBE8] text-[#0B6839] border border-[#0B6839] shadow-[2px_2px_0px_#000000]"
-                  : "text-current hover:bg-white/10"
-                }`}
-            >
-              <Sun className="w-3 h-3 text-[#FEE101]" />
-              <span>LIGHT</span>
-            </button>
-          </div>
         </div>
 
         {/* OUTSIDE DRAG REPOSITION HINT BAR */}
-        <div className={`w-full max-w-md border-2 px-3 py-2 rounded flex items-center justify-between text-[11px] font-bold shadow-[3px_3px_0px_#000000] ${isDarkSite ? "bg-[#0A3D24] border-[#00FF88] text-[#00FF88]" : "bg-[#FFFBE8] border-[#0B6839] text-[#0B6839]"}`}>
-          <div className="flex items-center gap-1.5">
-            <Move className="w-3.5 h-3.5 text-[#FF3B77]" />
-            <span>DRAG CANVAS TO REPOSITION CROP</span>
+        <div className="w-full max-w-[420px] hh-panel-pink px-2 py-1.5 rounded flex items-center justify-between text-[10px] font-bold shadow-[3px_3px_0px_#000000]">
+          <div className="flex items-center gap-1.5 text-white">
+            <Move className="w-3 h-3 text-white" />
+            <span>DRAG CANVAS TO REPOSITION</span>
           </div>
-          <span className="text-[10px] bg-[#FF3B77] text-white px-2 py-0.5 rounded font-mono">REALTIME</span>
+          <span className="text-[9px] bg-white text-[var(--accent-pink)] px-1.5 py-0.5 rounded font-mono border border-black shadow-[1px_1px_0px_#000]">REALTIME</span>
         </div>
 
         {/* Live Canvas Interactive Box */}
-        <div className={`relative w-full max-w-md aspect-[1080/1350] rounded-xl overflow-hidden shadow-[8px_8px_0px_rgba(0,0,0,0.7)] group touch-none select-none ${cardTheme === "dark" ? "hh-card-dark" : "hh-card-light"}`}>
+        <div className="relative w-full max-w-[420px] aspect-[1080/1350] rounded-xl overflow-hidden shadow-[8px_8px_0px_rgba(0,0,0,1)] group touch-none select-none hh-card">
           {/* Loader overlay */}
           {isAssetsLoading && (
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 font-mono p-6 bg-[#051F14] text-[#00FF88]">
-              <Stamp className="w-8 h-8 text-[#FF3B77] animate-bounce" />
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 font-mono p-6 hh-panel-pink text-white">
+              <Stamp className="w-8 h-8 text-white animate-bounce" />
               <div className="text-xs tracking-wider flex items-center gap-1">
-                <span className="text-[#FF3B77]">INITIALIZING CARD ENGINE...</span>
-                <span className="animate-cursor-blink text-[#00FF88]">_</span>
+                <span>INITIALIZING CARD ENGINE...</span>
+                <span className="animate-cursor-blink text-white">_</span>
               </div>
             </div>
           )}
@@ -462,21 +423,21 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
       </div>
 
       {/* RIGHT COLUMN: Form Controls & Action Buttons */}
-      <div className="w-full lg:w-1/2 flex flex-col gap-4">
+      <div className="w-full lg:w-[400px] flex flex-col gap-2 text-black">
         {/* Upload Dropzone */}
         <div
           onClick={() => fileInputRef.current?.click()}
-          className={`w-full p-4 rounded-lg border-3 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group shadow-[4px_4px_0px_#000000] ${isDarkSite ? "bg-[#0A3D24] border-[#00FF88] hover:bg-[#062B19]" : "bg-[#FFFBE8] border-[#0B6839] hover:bg-[#F7F1E1]"}`}
+          className="w-full p-2 rounded-lg border-[3px] border-black transition-all cursor-pointer flex flex-col items-center justify-center gap-1 group shadow-[4px_4px_0px_#000000] bg-white hover:bg-gray-100"
         >
-          <div className="w-10 h-10 rounded-md bg-[#FF3B77]/20 border-2 border-current flex items-center justify-center group-hover:scale-110 transition-transform">
-            <Camera className="w-5 h-5 text-[#FF3B77]" />
+          <div className="w-10 h-10 rounded-md bg-[var(--accent-pink)] border-2 border-black flex items-center justify-center group-hover:scale-110 transition-transform">
+            <Camera className="w-5 h-5 text-white" />
           </div>
           <div className="text-center">
-            <p className="text-xs font-bold flex items-center gap-1.5 justify-center tracking-wider">
-              <Upload className="w-3.5 h-3.5 text-[#FF3B77]" />
+            <p className="text-xs font-bold flex items-center gap-1.5 justify-center tracking-wider text-black">
+              <Upload className="w-3.5 h-3.5 text-[var(--accent-pink)]" />
               <span>{photos[0]?.image ? "[ CHANGE BUILDER PHOTO ]" : "[ UPLOAD BUILDER PHOTO ]"}</span>
             </p>
-            <p className="text-[10px] opacity-75 mt-1 font-mono">
+            <p className="text-[10px] opacity-75 mt-1 font-mono text-black">
               Supports JPG, PNG, WEBP, HEIC (iPhone gallery / camera)
             </p>
           </div>
@@ -484,13 +445,13 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
 
         {/* Squad Member Selector */}
         {mode === "squad" && (
-          <div className={`flex flex-col gap-2 p-3.5 rounded-lg border-2 shadow-[4px_4px_0px_#000000] ${isDarkSite ? "bg-[#0A3D24] border-[#00FF88]" : "bg-[#FFFBE8] border-[#0B6839]"}`}>
+          <div className="flex flex-col gap-1 p-2 rounded-lg border-2 border-black shadow-[4px_4px_0px_#000000] hh-panel-yellow text-black">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold">TEAMMATES ({photos.length}/4)</span>
+              <span className="text-[11px] font-bold">TEAMMATES ({photos.length}/4)</span>
               {photos.length < 4 && (
                 <button
                   onClick={addSquadMember}
-                  className="text-[10px] bg-[#FF3B77] text-white px-2 py-1 rounded font-bold font-mono border border-black"
+                  className="text-[9px] bg-[var(--accent-pink)] text-white px-2 py-1 rounded font-bold font-mono border border-black shadow-[1px_1px_0px_#000]"
                 >
                   + ADD TEAMMATE
                 </button>
@@ -501,21 +462,21 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
                 <div
                   key={idx}
                   onClick={() => setActivePhotoIdx(idx)}
-                  className={`p-2 rounded border-2 text-xs flex flex-col gap-1 cursor-pointer transition-all ${activePhotoIdx === idx
-                      ? "border-[#FF3B77] bg-[#FF3B77]/20"
-                      : "border-current bg-black/20"
+                  className={`p-2 rounded border-2 border-black text-xs flex flex-col gap-1 cursor-pointer transition-all ${activePhotoIdx === idx
+                      ? "bg-[var(--accent-pink)] text-white"
+                      : "bg-white text-black"
                     }`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-[10px]">SLOT #{idx + 1}</span>
-                    {p.image && <Check className="w-3 h-3 text-[#FF3B77]" />}
+                    {p.image && <Check className={`w-3 h-3 ${activePhotoIdx === idx ? "text-white" : "text-[var(--accent-pink)]"}`} />}
                   </div>
                   <input
                     type="text"
                     value={p.name || ""}
                     onChange={(e) => updateSquadMemberName(idx, e.target.value)}
                     placeholder={`Teammate ${idx + 1}`}
-                    className="w-full bg-black/40 border border-current px-2 py-1 rounded text-[11px] focus:outline-none focus:border-[#FF3B77] font-mono"
+                    className="w-full border border-black px-1.5 py-0.5 rounded text-[10px] focus:outline-none focus:border-[var(--accent-gold)] font-mono text-black"
                   />
                 </div>
               ))}
@@ -524,12 +485,12 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
         )}
 
         {/* Form Inputs */}
-        <div className={`flex flex-col gap-3 p-4 rounded-lg border-2 shadow-[4px_4px_0px_#000000] ${isDarkSite ? "bg-[#0A3D24] border-[#00FF88]" : "bg-[#FFFBE8] border-[#0B6839]"}`}>
+        <div className="flex flex-col gap-1.5 p-2 rounded-lg border-2 border-black shadow-[4px_4px_0px_#000000] hh-panel-yellow text-black">
           {/* Name Field */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] font-bold flex items-center justify-between">
+          <div className="flex flex-col gap-0.5">
+            <label className="text-[10px] font-bold flex items-center justify-between">
               <span>BUILDER NAME</span>
-              <span className="text-[10px] text-[#FF3B77]">[ REQUIRED ]</span>
+              <span className="text-[9px] text-[var(--accent-pink)]">[ REQUIRED ]</span>
             </label>
             <input
               type="text"
@@ -537,14 +498,14 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Siddharth Paul "
               maxLength={36}
-              className={`w-full border-2 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-[#FF3B77] font-bold uppercase transition-colors font-mono ${isDarkSite ? "bg-[#051F14] border-[#00FF88] text-white" : "bg-[#F7F1E1] border-[#0B6839] text-[#0A291A]"}`}
+              className="w-full border-2 border-black rounded px-2 py-1 text-[11px] focus:outline-none focus:border-[var(--accent-pink)] font-bold uppercase transition-colors font-mono bg-white text-black"
             />
           </div>
 
           {/* Currently Building / Shipping Field */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] font-bold flex items-center gap-1">
-              <Rocket className="w-3 h-3 text-[#FEE101]" />
+          <div className="flex flex-col gap-0.5">
+            <label className="text-[10px] font-bold flex items-center gap-1">
+              <Rocket className="w-3 h-3 text-[var(--accent-pink)]" />
               <span>CURRENTLY SHIPPING / BUILDING</span>
             </label>
             <input
@@ -553,14 +514,14 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
               onChange={(e) => setShipping(e.target.value)}
               placeholder="e.g. Solana DEX & AI Agents"
               maxLength={40}
-              className={`w-full border-2 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-[#FF3B77] font-mono ${isDarkSite ? "bg-[#051F14] border-[#00FF88] text-white" : "bg-[#F7F1E1] border-[#0B6839] text-[#0A291A]"}`}
+              className="w-full border-2 border-black rounded px-2 py-1 text-[11px] focus:outline-none focus:border-[var(--accent-pink)] font-mono bg-white text-black"
             />
           </div>
 
           {/* Fuel / Runs On Field */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] font-bold flex items-center gap-1">
-              <Coffee className="w-3 h-3 text-[#FEE101]" />
+          <div className="flex flex-col gap-0.5">
+            <label className="text-[10px] font-bold flex items-center gap-1">
+              <Coffee className="w-3 h-3 text-[var(--accent-pink)]" />
               <span>FUEL / RUNS ON</span>
             </label>
             <input
@@ -569,13 +530,13 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
               onChange={(e) => setRunsOn(e.target.value)}
               placeholder="e.g. Espresso & ZK Proofs"
               maxLength={40}
-              className={`w-full border-2 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-[#FF3B77] font-mono ${isDarkSite ? "bg-[#051F14] border-[#00FF88] text-white" : "bg-[#F7F1E1] border-[#0B6839] text-[#0A291A]"}`}
+              className="w-full border-2 border-black rounded px-2 py-1 text-[11px] focus:outline-none focus:border-[var(--accent-pink)] font-mono bg-white text-black"
             />
           </div>
 
           {/* Stack / Role Field */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] font-bold">
+          <div className="flex flex-col gap-0.5">
+            <label className="text-[10px] font-bold">
               STACK / SKILLS (COMMA SEPARATED)
             </label>
             <input
@@ -584,14 +545,15 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
               onChange={(e) => setStack(e.target.value)}
               placeholder="e.g. Full-stack, Rust, Solana, AI"
               maxLength={36}
-              className={`w-full border-2 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-[#FF3B77] transition-colors font-mono ${isDarkSite ? "bg-[#051F14] border-[#00FF88] text-white" : "bg-[#F7F1E1] border-[#0B6839] text-[#0A291A]"}`}
+              className="w-full border-2 border-black rounded px-2 py-1 text-[11px] focus:outline-none focus:border-[var(--accent-pink)] transition-colors font-mono bg-white text-black"
             />
           </div>
 
           {/* Team Name Field */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] font-bold">
-              TEAM NAME (OPTIONAL)
+          <div className="flex flex-col gap-0.5">
+            <label className="text-[10px] font-bold flex items-center justify-between">
+              <span>TEAM NAME</span>
+              <span className="text-[9px] text-[var(--accent-pink)]">[ REQUIRED ]</span>
             </label>
             <input
               type="text"
@@ -599,42 +561,42 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
               onChange={(e) => setTeamName(e.target.value)}
               placeholder="e.g. Solana Surfers / Protocol Vanguard"
               maxLength={32}
-              className={`w-full border-2 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-[#FF3B77] font-bold uppercase transition-colors font-mono ${isDarkSite ? "bg-[#051F14] border-[#00FF88] text-white" : "bg-[#F7F1E1] border-[#0B6839] text-[#0A291A]"}`}
+              className="w-full border-2 border-black rounded px-2 py-1 text-[11px] focus:outline-none focus:border-[var(--accent-pink)] font-bold uppercase transition-colors font-mono bg-white text-black"
             />
           </div>
 
           {/* Builder Title */}
-          <div className="flex flex-col gap-1 pt-1">
+          <div className="flex flex-col gap-0.5 pt-1">
             <div className="flex items-center justify-between">
-              <label className="text-[11px] font-bold flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-[#FF3B77]" />
+              <label className="text-[10px] font-bold flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-[var(--accent-pink)]" />
                 <span>BUILDER CLASS TITLE</span>
               </label>
               <button
                 type="button"
                 onClick={handleRerollTitle}
-                className="px-2 py-0.5 text-[10px] font-mono flex items-center gap-1 rounded border border-current hover:bg-[#FF3B77] hover:text-white"
+                className="px-1.5 py-0.5 text-[9px] font-mono flex items-center gap-1 rounded border border-black hover:bg-[var(--accent-pink)] hover:text-white transition-colors"
               >
-                <RefreshCw className="w-3 h-3" />
+                <RefreshCw className="w-2.5 h-2.5" />
                 <span>[ SHUFFLE ]</span>
               </button>
             </div>
-            <div className={`w-full border-2 rounded px-3 py-2 text-xs font-bold text-[#FF3B77] tracking-wider flex items-center justify-between font-mono ${isDarkSite ? "bg-[#051F14] border-[#00FF88]" : "bg-[#F7F1E1] border-[#0B6839]"}`}>
+            <div className="w-full border-2 border-black rounded px-2 py-1 text-[11px] font-bold text-white bg-[var(--accent-pink)] tracking-wider flex items-center justify-between font-mono">
               <span>[ {builderTitle} ]</span>
-              <span className="text-[9px] bg-[#FF3B77] text-white px-1.5 py-0.5 rounded font-bold">DETERMINISTIC</span>
+              <span className="text-[8px] bg-white text-[var(--accent-pink)] px-1 py-0.5 rounded font-bold border border-black">DETERMINISTIC</span>
             </div>
           </div>
         </div>
 
         {/* Retro Tactile Action Buttons */}
-        <div className="grid grid-cols-2 gap-3 mt-1">
+        <div className="grid grid-cols-2 gap-2 mt-0.5 shrink-0">
           {/* Download Button */}
           <button
             onClick={handleDownload}
             disabled={isAssetsLoading}
-            className="btn-hh-accent py-3.5 px-4 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider disabled:opacity-50"
+            className="btn-hh-accent py-2 px-3 flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-wider disabled:opacity-50"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-3.5 h-3.5" />
             <span>[ DOWNLOAD PNG ]</span>
           </button>
 
@@ -642,7 +604,7 @@ export default function IdGenerator({ globalTheme, onToggleGlobalTheme }: IdGene
           <button
             onClick={handleShare}
             disabled={isSharing || isAssetsLoading}
-            className="btn-hh-primary py-3.5 px-4 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider disabled:opacity-50"
+            className="btn-hh-primary py-2 px-3 flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-wider disabled:opacity-50"
           >
             <Share2 className={`w-4 h-4 ${isSharing ? "animate-spin" : ""}`} />
             <span>{isSharing ? "[ UPLOADING... ]" : "[ SHARE TO X ]"}</span>
