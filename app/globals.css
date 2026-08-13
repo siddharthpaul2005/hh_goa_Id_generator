@@ -3,114 +3,107 @@
 @tailwind utilities;
 
 :root {
-  --background: 250 246 238; /* #FAF6EE Warm Parchment */
-  --foreground: 10 41 26;    /* #0A291A Dark Forest */
+  --background: 7 46 27;   /* #072E1B Rich Deep Emerald */
+  --foreground: 255 251 232; /* #FFFBE8 Cream */
 }
 
 body {
-  color: #0A291A;
-  background: #FAF6EE;
+  color: #FFFBE8;
+  background: #072E1B;
   font-family: var(--font-jetbrains-mono), monospace;
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Custom Scrollbar - Retro Parchment & Forest Green */
+/* Custom Scrollbar - Deep Emerald & Gold */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #F4EFE2;
+  background: #052214;
 }
 ::-webkit-scrollbar-thumb {
-  background: #0B6839;
+  background: #FEE101;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #FF3B77;
 }
 
-/* Parchment Paper Card Container */
-.parchment-card {
-  background: #FFFBE8;
-  border: 3px solid #0B6839;
-  box-shadow: 6px 6px 0px #0B6839;
+/* Rich Emerald Card Containers */
+.emerald-card {
+  background: #0A3D24;
+  border: 3px solid #FEE101;
+  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.6);
 }
 
-.parchment-panel {
-  background: #F7F1E1;
-  border: 2px solid #0B6839;
+.emerald-panel {
+  background: #062B19;
+  border: 2px solid #FEE101;
 }
 
-/* RETRO POSTER BUTTONS */
-.btn-poster-green {
-  background: #0B6839;
-  color: #FFFBE8;
+/* RETRO EMERALD & GOLD BUTTONS */
+.btn-emerald-gold {
+  background: #FEE101;
+  color: #072E1B;
   font-family: var(--font-jetbrains-mono), monospace;
-  font-weight: 700;
-  border: 2px solid #074726;
-  box-shadow: 4px 4px 0px #074726;
+  font-weight: 800;
+  border: 2px solid #000000;
+  box-shadow: 4px 4px 0px #000000;
   border-radius: 4px;
   transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
 }
-.btn-poster-green:hover {
-  background: #0E7D45;
+.btn-emerald-gold:hover {
+  background: #FFF066;
   transform: scale(1.02);
-  box-shadow: 6px 6px 0px #074726;
+  box-shadow: 6px 6px 0px #000000;
 }
-.btn-poster-green:active {
+.btn-emerald-gold:active {
   transform: translate(3px, 3px) scale(0.98);
-  box-shadow: 1px 1px 0px #074726;
+  box-shadow: 1px 1px 0px #000000;
 }
 
-.btn-poster-pink {
+.btn-emerald-pink {
   background: #FF3B77;
   color: #FFFFFF;
   font-family: var(--font-jetbrains-mono), monospace;
-  font-weight: 700;
-  border: 2px solid #0B6839;
-  box-shadow: 4px 4px 0px #0B6839;
+  font-weight: 800;
+  border: 2px solid #000000;
+  box-shadow: 4px 4px 0px #000000;
   border-radius: 4px;
   transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
 }
-.btn-poster-pink:hover {
+.btn-emerald-pink:hover {
   background: #FF5288;
   transform: scale(1.02);
-  box-shadow: 6px 6px 0px #0B6839;
+  box-shadow: 6px 6px 0px #000000;
 }
-.btn-poster-pink:active {
+.btn-emerald-pink:active {
   transform: translate(3px, 3px) scale(0.98);
-  box-shadow: 1px 1px 0px #0B6839;
+  box-shadow: 1px 1px 0px #000000;
 }
 
-/* RETRO TABS */
-.tab-poster {
-  border: 2px solid #0B6839;
-  background: #F4EFE2;
-  color: #0B6839;
+/* TABS */
+.tab-emerald {
+  border: 2px solid #FEE101;
+  background: #062B19;
+  color: #FEE101;
   font-family: var(--font-jetbrains-mono), monospace;
   font-weight: 700;
   transition: all 120ms ease;
 }
-.tab-poster-active {
-  border: 2px solid #0B6839;
+.tab-emerald-active {
+  border: 2px solid #FEE101;
   background: #FF3B77;
   color: #FFFFFF;
-  font-weight: 700;
-  box-shadow: 3px 3px 0px #0B6839;
+  font-weight: 800;
+  box-shadow: 3px 3px 0px #000000;
 }
 
-/* POSTAGE STAMP & RIBBON UTILITIES */
-.postage-stamp-border {
-  background-color: #FFFBE8;
-  border: 2px dashed #0B6839;
-  padding: 4px;
-}
-
-/* Noise / Grain Texture Overlay */
-.bg-parchment-grain {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+/* Noise / Grain Overlay */
+.bg-emerald-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E");
 }
 
 /* BLINKING CURSOR */
